@@ -12,21 +12,19 @@ export default function AnalyzerPage() {
     const [isMounted, setIsMounted] = useState(false);
     const [result, setResult] = useState<any>(null);
 
-    // ✅ Mount guard for Next.js 15 / React 19
     useEffect(() => {
         setIsMounted(true);
     }, []);
 
-    // ✅ Initialize Tiptap editor
     const editor = useEditor({
         extensions: [StarterKit],
         content: "",
         editorProps: {
             attributes: {
-                class: "min-h-[200px] p-4 focus:outline-none text-gray-800",
+                class: "min-h-[200px] p-4 focus:outline-none text-gray-800 bg-white",
             },
         },
-        immediatelyRender: false, // avoid hydration mismatches
+        immediatelyRender: false,
     });
 
     async function handleSubmit() {
@@ -36,11 +34,14 @@ export default function AnalyzerPage() {
 
         setLoading(true);
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/analyze`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ passage }),
-            });
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/analyze`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ passage }),
+                }
+            );
             const data = await res.json();
             setResult(data);
         } catch (err) {
@@ -66,26 +67,35 @@ export default function AnalyzerPage() {
                     Enter Passage
                 </h2>
 
-                <div className="border border-gray-300 rounded-lg shadow-sm bg-gray-50">
-                    <EditorContent
-                        editor={editor}
-                        className="min-h-[200px] p-4 text-gray-800 focus:outline-none prose prose-sm max-w-none"
-                    />
-                </div>
+                {/* ✅ Only render editor when initialized */}
+                {editor ? (
+                    <div className="border border-gray-300 rounded-lg shadow-sm bg-gray-50">
+                        <EditorContent
+                            editor={editor}
+                            className="min-h-[200px] p-4 text-gray-800 focus:outline-none prose prose-sm max-w-none"
+                        />
+                    </div>
+                ) : (
+                    <div className="h-[200px] border border-gray-300 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500">
+                        Loading editor...
+                    </div>
+                )}
 
-                <button
-                    onClick={handleSubmit}
-                    disabled={loading}
-                    className={`px-6 py-2 rounded-lg text-white transition 
-                        ${
+                {/* ✅ Always visible button */}
+                <div className="flex justify-end pt-2">
+                    <button
+                        type="button"
+                        onClick={handleSubmit}
+                        disabled={loading}
+                        className={`px-6 py-2 rounded-lg text-white font-medium ${
                             loading
-                                ? "bg-gray-400"
+                                ? "bg-gray-400 cursor-not-allowed"
                                 : "bg-blue-600 hover:bg-blue-700"
-                        }
-                    `}
-                >
-                    {loading ? "Analyzing..." : "Analyze Passage"}
-                </button>
+                        }`}
+                    >
+                        {loading ? "Analyzing..." : "Analyze Passage"}
+                    </button>
+                </div>
             </div>
 
             {/* --- RESULT SECTION --- */}
