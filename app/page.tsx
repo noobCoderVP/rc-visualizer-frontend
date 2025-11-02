@@ -1,65 +1,124 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+import { motion } from "framer-motion";
+import Link from "next/link";
+
+export default function HomePage() {
+    return (
+        <main className="flex flex-col items-center text-center py-10 px-4 sm:px-8">
+            {/* Hero Section */}
+            <motion.section
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="max-w-3xl"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black mb-4">
+                    Welcome to{" "}
+                    <span className="text-gray-700">Passage Visualizer</span>
+                </h1>
+                <p className="text-gray-700 text-base sm:text-lg leading-relaxed mb-6">
+                    A modern AI-powered interface that helps CAT aspirants and
+                    readers
+                    <strong>
+                        {" "}
+                        analyze Reading Comprehension (RC) passages visually
+                    </strong>{" "}
+                    and
+                    <strong> solve questions logically</strong>. Understand
+                    every paragraph — not just read it.
+                </p>
+
+                <div className="flex flex-col sm:flex-row justify-center gap-4 mt-6">
+                    <Link
+                        href="/analyze"
+                        className="bg-black text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-gray-800 transition"
+                    >
+                        Analyze Passage
+                    </Link>
+                    <Link
+                        href="/solve"
+                        className="border border-black text-black px-6 py-3 rounded-lg text-sm font-medium hover:bg-gray-100 transition"
+                    >
+                        Solve RC
+                    </Link>
+                </div>
+            </motion.section>
+
+            {/* Features Section */}
+            <motion.section
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+                className="mt-16 max-w-5xl text-left"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+                <h2 className="text-2xl sm:text-3xl font-semibold mb-6 text-center">
+                    What Can Passage Visualizer Do?
+                </h2>
+
+                <div className="grid md:grid-cols-2 gap-10">
+                    {/* Analyze Feature */}
+                    <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        className="p-6 border border-gray-300 rounded-xl shadow-sm hover:shadow-md transition"
+                    >
+                        <h3 className="text-lg font-bold mb-3 text-black">
+                            🧠 AI-Based RC Analysis
+                        </h3>
+                        <p className="text-gray-700 text-sm leading-relaxed">
+                            Upload or paste any Reading Comprehension passage,
+                            and our AI breaks it down visually — identifying key
+                            vocabulary, transitions, logical flow, and author’s
+                            purpose. Get structured insights like{" "}
+                            <strong>facts, opinions, inferences,</strong> and
+                            <strong> logical connections</strong> in JSON-based
+                            visualization.
+                        </p>
+                    </motion.div>
+
+                    {/* Solve Feature */}
+                    <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        className="p-6 border border-gray-300 rounded-xl shadow-sm hover:shadow-md transition"
+                    >
+                        <h3 className="text-lg font-bold mb-3 text-black">
+                            🧩 Logical Question Solving
+                        </h3>
+                        <p className="text-gray-700 text-sm leading-relaxed">
+                            In the <strong>“Solve”</strong> section, you can
+                            provide the passage and its questions. The AI
+                            explains step-by-step reasoning for each answer —
+                            helping you understand not just <em>what</em> is
+                            right, but
+                            <em>why</em>. Perfect for deep conceptual clarity
+                            and CAT-level accuracy.
+                        </p>
+                    </motion.div>
+                </div>
+            </motion.section>
+
+            {/* Call to Action */}
+            <motion.section
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ delay: 0.4, duration: 0.6 }}
+                className="mt-20 text-center"
+            >
+                <h2 className="text-xl sm:text-2xl font-semibold mb-4">
+                    Ready to Improve Your RC Skills?
+                </h2>
+                <p className="text-gray-700 mb-6 text-sm sm:text-base">
+                    Dive into AI-powered analysis and logical solving to make RC
+                    your strongest section.
+                </p>
+                <Link
+                    href="/analyze"
+                    className="bg-black text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-gray-800 transition"
+                >
+                    Start Now
+                </Link>
+            </motion.section>
+        </main>
+    );
 }
