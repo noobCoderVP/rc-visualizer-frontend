@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import SectionCard from "./SectionCard";
 import TransitionVisualizer from "./TransitionVisualizer";
 
@@ -11,10 +11,19 @@ export default function AnalyzerPage() {
     const [result, setResult] = useState<any>(null);
     const [passage, setPassage] = useState("");
     const [isReadOnly, setIsReadOnly] = useState(false);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     useEffect(() => {
         setIsMounted(true);
     }, []);
+
+    // ✅ Auto resize textarea
+    useEffect(() => {
+        if (textareaRef.current) {
+            textareaRef.current.style.height = "auto";
+            textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+        }
+    }, [passage]);
 
     async function handleSubmit() {
         const text = passage.trim();
@@ -42,6 +51,13 @@ export default function AnalyzerPage() {
         }
     }
 
+    // ✅ Reset everything
+    function handleReset() {
+        setPassage("");
+        setResult(null);
+        setIsReadOnly(false);
+    }
+
     if (!isMounted)
         return (
             <div className="p-4 text-gray-600 text-center">
@@ -50,20 +66,20 @@ export default function AnalyzerPage() {
         );
 
     return (
-        <div className="p-4 space-y-8">
+        <div className="mx-auto max-w-[1300px] p-4 space-y-8">
             {/* --- INPUT SECTION --- */}
             <div className="space-y-3">
                 <h2 className="text-xl font-semibold text-gray-700">
                     Enter Passage
                 </h2>
 
-                {/* ✅ Custom Input Area */}
                 <textarea
+                    ref={textareaRef}
                     value={passage}
                     onChange={(e) => setPassage(e.target.value)}
                     readOnly={isReadOnly}
                     placeholder="Paste or type your passage here..."
-                    className={`w-full min-h-[220px] rounded-xl text-gray-800 transition-all duration-200 p-4 resize-none focus:outline-none shadow-sm
+                    className={`w-full rounded-xl text-gray-800 transition-all duration-200 p-4 resize-none focus:outline-none shadow-sm overflow-hidden
                         ${
                             isReadOnly
                                 ? "bg-gray-50 text-[1.05rem] leading-relaxed font-serif cursor-not-allowed shadow-md"
@@ -72,8 +88,22 @@ export default function AnalyzerPage() {
                     `}
                 />
 
-                {/* ✅ Button */}
-                <div className="flex justify-end pt-1">
+                {/* ✅ Buttons */}
+                <div className="flex justify-end gap-3 pt-1">
+                    <button
+                        type="button"
+                        onClick={handleReset}
+                        disabled={loading}
+                        className={`px-5 py-2 rounded-lg font-medium border transition-all 
+                            ${
+                                loading
+                                    ? "text-gray-400 border-gray-300 cursor-not-allowed"
+                                    : "text-gray-700 border-gray-300 hover:bg-gray-100"
+                            }`}
+                    >
+                        Reset
+                    </button>
+
                     <button
                         type="button"
                         onClick={handleSubmit}
