@@ -2,8 +2,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
 import SectionCard from "./SectionCard";
 import TransitionVisualizer from "./TransitionVisualizer";
 
@@ -11,35 +9,26 @@ export default function AnalyzerPage() {
     const [loading, setLoading] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
     const [result, setResult] = useState<any>(null);
+    const [passage, setPassage] = useState("");
+    const [isReadOnly, setIsReadOnly] = useState(false);
 
     useEffect(() => {
         setIsMounted(true);
     }, []);
 
-    const editor = useEditor({
-        extensions: [StarterKit],
-        content: "",
-        editorProps: {
-            attributes: {
-                class: "min-h-[200px] p-4 focus:outline-none text-gray-800 bg-white",
-            },
-        },
-        immediatelyRender: false,
-    });
-
     async function handleSubmit() {
-        if (!editor) return;
-        const passage = editor.getText().trim();
-        if (!passage) return alert("Please enter a passage before analyzing.");
+        const text = passage.trim();
+        if (!text) return alert("Please enter a passage before analyzing.");
 
         setLoading(true);
+        setIsReadOnly(true);
         try {
             const res = await fetch(
                 `${process.env.NEXT_PUBLIC_API_URL}/analyze`,
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ passage }),
+                    body: JSON.stringify({ passage: text }),
                 }
             );
             const data = await res.json();
@@ -47,6 +36,7 @@ export default function AnalyzerPage() {
         } catch (err) {
             console.error("Error analyzing passage:", err);
             alert("Something went wrong. Please try again.");
+            setIsReadOnly(false);
         } finally {
             setLoading(false);
         }
@@ -54,44 +44,46 @@ export default function AnalyzerPage() {
 
     if (!isMounted)
         return (
-            <div className="p-6 bg-white rounded-2xl border shadow-md text-gray-600 text-center">
+            <div className="p-4 text-gray-600 text-center">
                 Loading editor...
             </div>
         );
 
     return (
-        <div className="space-y-10 max-w-3xl mx-auto">
+        <div className="p-4 space-y-8">
             {/* --- INPUT SECTION --- */}
-            <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-200 space-y-4">
-                <h2 className="text-2xl font-semibold text-gray-700">
+            <div className="space-y-3">
+                <h2 className="text-xl font-semibold text-gray-700">
                     Enter Passage
                 </h2>
 
-                {/* ✅ Only render editor when initialized */}
-                {editor ? (
-                    <div className="border border-gray-300 rounded-lg shadow-sm bg-gray-50">
-                        <EditorContent
-                            editor={editor}
-                            className="min-h-[200px] p-4 text-gray-800 focus:outline-none prose prose-sm max-w-none"
-                        />
-                    </div>
-                ) : (
-                    <div className="h-[200px] border border-gray-300 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500">
-                        Loading editor...
-                    </div>
-                )}
+                {/* ✅ Custom Input Area */}
+                <textarea
+                    value={passage}
+                    onChange={(e) => setPassage(e.target.value)}
+                    readOnly={isReadOnly}
+                    placeholder="Paste or type your passage here..."
+                    className={`w-full min-h-[220px] rounded-xl text-gray-800 transition-all duration-200 p-4 resize-none focus:outline-none shadow-sm
+                        ${
+                            isReadOnly
+                                ? "bg-gray-50 text-[1.05rem] leading-relaxed font-serif cursor-not-allowed shadow-md"
+                                : "bg-white focus:shadow-lg"
+                        }
+                    `}
+                />
 
-                {/* ✅ Always visible button */}
-                <div className="flex justify-end pt-2">
+                {/* ✅ Button */}
+                <div className="flex justify-end pt-1">
                     <button
                         type="button"
                         onClick={handleSubmit}
-                        disabled={loading}
-                        className={`px-6 py-2 rounded-lg text-white font-medium ${
-                            loading
-                                ? "bg-gray-400 cursor-not-allowed"
-                                : "bg-blue-600 hover:bg-blue-700"
-                        }`}
+                        disabled={loading || isReadOnly}
+                        className={`px-6 py-2 rounded-lg text-white font-medium transition-all 
+                            ${
+                                loading || isReadOnly
+                                    ? "bg-gray-400 cursor-not-allowed"
+                                    : "bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg"
+                            }`}
                     >
                         {loading ? "Analyzing..." : "Analyze Passage"}
                     </button>
@@ -100,7 +92,7 @@ export default function AnalyzerPage() {
 
             {/* --- RESULT SECTION --- */}
             {result && (
-                <div className="space-y-6">
+                <div className="space-y-5">
                     <SectionCard
                         title="Title"
                         color="bg-blue-50"
