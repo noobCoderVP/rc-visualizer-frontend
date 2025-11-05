@@ -20,3 +20,86 @@ a {
 a:hover {
   text-decoration: underline;
 }
+
+/* ==============================
+   GLOBAL STYLES FOR MINDMAP HTML
+   ============================== */
+
+/* Paragraph spacing and typography */
+p {
+  margin-bottom: 1rem;
+  line-height: 1.7;
+  color: #1f2937; /* text-gray-800 */
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 1.05rem;
+}
+
+/* Highlighted words with tooltip */
+.highlighted-word {
+  background-color: #fff5cc; /* soft yellow */
+  padding: 2px 5px;
+  border-radius: 6px;
+  position: relative;
+  cursor: help;
+  transition: background-color 0.25s ease;
+}
+
+.highlighted-word:hover {
+  background-color: #ffec99;
+}
+
+/* Tooltip styling for title attribute */
+.highlighted-word[title] {
+  text-decoration: underline dotted #d97706; /* amber-600 */
+  text-underline-offset: 3px;
+}
+
+/* Explanation block following each sentence */
+.explanation {
+  display: block;
+  background: #f0f9ff; /* light blue */
+  border-left: 3px solid #38bdf8; /* cyan-400 */
+  color: #0f172a; /* slate-900 */
+  padding: 8px 12px;
+  margin: 6px 0 12px 0;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  font-family: system-ui, sans-serif;
+}
+
+/* Optional subtle fade-in animation for explanations */
+.explanation {
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Better text selection contrast */
+::selection {
+  background: #fde68a; /* amber-200 */
+  color: #111827; /* gray-900 */
+}
+
+/* Optional: Smooth scrollbar for long passages */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1; /* slate-300 */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8; /* slate-400 */
+}
