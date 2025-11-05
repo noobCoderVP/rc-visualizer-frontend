@@ -11,13 +11,15 @@ export default function AnalyzerPage() {
     const [result, setResult] = useState<any>(null);
     const [passage, setPassage] = useState("");
     const [isReadOnly, setIsReadOnly] = useState(false);
-    const [readingView, setReadingView] = useState<string | null>(null);
-    const [readingLoading, setReadingLoading] = useState(false);
+    const [readingView, setReadingView] = useState<string | null>(null); // 🆕 for Read Passage
+    const [readingLoading, setReadingLoading] = useState(false); // 🆕
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    useEffect(() => setIsMounted(true), []);
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
-    // ✅ Auto-resize textarea
+    // ✅ Auto resize textarea as user types
     useEffect(() => {
         if (textareaRef.current) {
             textareaRef.current.style.height = "auto";
@@ -25,22 +27,19 @@ export default function AnalyzerPage() {
         }
     }, [passage]);
 
-    // ✅ Analyze Passage
+    // ✅ Analyze Passage handler
     async function handleSubmit() {
         const text = passage.trim();
         if (!text) return alert("Please enter a passage before analyzing.");
+
         setLoading(true);
         setIsReadOnly(true);
-
         try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/analyze`,
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ passage: text }),
-                }
-            );
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/analyze`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ passage: text }),
+            });
 
             const data = await res.json();
             setResult(data);
@@ -53,7 +52,7 @@ export default function AnalyzerPage() {
         }
     }
 
-    // ✅ Read Passage / Mindmap
+    // 🆕 Read Passage / Mindmap view handler
     async function handleReadPassage() {
         const text = passage.trim();
         if (!text) return alert("Please enter a passage before reading.");
@@ -61,16 +60,13 @@ export default function AnalyzerPage() {
         setReadingLoading(true);
         setIsReadOnly(true);
         try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/mindmap`,
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ passage: text }),
-                }
-            );
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/mindmap`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ passage: text }),
+            });
 
-            const data = await res.text();
+            const data = await res.text(); // response is HTML text
             setReadingView(data);
         } catch (err) {
             console.error("Error fetching reading view:", err);
@@ -81,6 +77,7 @@ export default function AnalyzerPage() {
         }
     }
 
+    // ✅ Reset everything
     function handleReset() {
         setPassage("");
         setResult(null);
@@ -96,10 +93,10 @@ export default function AnalyzerPage() {
         );
 
     return (
-        <div className="mx-auto max-w-[1300px] p-4 pb-24 space-y-8">
+        <div className="mx-auto max-w-[1300px] p-4 space-y-8">
             {/* --- INPUT SECTION --- */}
             <div className="space-y-3">
-                <h2 className="text-xl sm:text-2xl font-semibold text-gray-700">
+                <h2 className="text-xl font-semibold text-gray-700">
                     Enter Passage
                 </h2>
 
@@ -109,16 +106,62 @@ export default function AnalyzerPage() {
                     onChange={(e) => setPassage(e.target.value)}
                     readOnly={isReadOnly}
                     placeholder="Paste or type your passage here..."
-                    className={`w-full rounded-xl text-gray-800 p-4 resize-none focus:outline-none shadow-sm overflow-hidden text-base sm:text-lg transition-all
+                    className={`w-full rounded-xl text-gray-800 transition-all duration-200 p-4 resize-none focus:outline-none shadow-sm overflow-hidden
                         ${
                             isReadOnly
-                                ? "bg-gray-50 font-serif cursor-not-allowed shadow-md"
+                                ? "bg-gray-50 text-[1.05rem] leading-relaxed font-serif cursor-not-allowed shadow-md"
                                 : "bg-white focus:shadow-lg"
-                        }`}
+                        }
+                    `}
                 />
+
+                {/* ✅ Buttons */}
+                <div className="flex justify-end gap-3 pt-1 flex-wrap">
+                    <button
+                        type="button"
+                        onClick={handleReset}
+                        disabled={loading || readingLoading}
+                        className={`px-5 py-2 rounded-lg font-medium border transition-all 
+                            ${
+                                loading || readingLoading
+                                    ? "text-gray-400 border-gray-300 cursor-not-allowed"
+                                    : "text-gray-700 border-gray-300 hover:bg-gray-100"
+                            }`}
+                    >
+                        Reset
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={handleReadPassage}
+                        disabled={readingLoading}
+                        className={`px-6 py-2 rounded-lg text-white font-medium transition-all 
+                            ${
+                                readingLoading || isReadOnly
+                                    ? "bg-gray-400 cursor-not-allowed"
+                                    : "bg-emerald-600 hover:bg-emerald-700 shadow-md hover:shadow-lg"
+                            }`}
+                    >
+                        {readingLoading ? "Reading..." : "Read Passage"}
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={handleSubmit}
+                        disabled={loading}
+                        className={`px-6 py-2 rounded-lg text-white font-medium transition-all 
+                            ${
+                                loading || isReadOnly
+                                    ? "bg-gray-400 cursor-not-allowed"
+                                    : "bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg"
+                            }`}
+                    >
+                        {loading ? "Analyzing..." : "Analyze Passage"}
+                    </button>
+                </div>
             </div>
 
-            {/* --- RESULT SECTIONS --- */}
+            {/* --- READ PASSAGE SECTION --- */}
             {readingView && (
                 <SectionCard
                     title="Read Passage"
@@ -132,6 +175,7 @@ export default function AnalyzerPage() {
                 </SectionCard>
             )}
 
+            {/* --- RESULT SECTION --- */}
             {result && (
                 <div className="space-y-5">
                     <SectionCard
@@ -222,48 +266,6 @@ export default function AnalyzerPage() {
                     </SectionCard>
                 </div>
             )}
-
-            {/* --- STICKY BOTTOM NAVIGATION (Mobile Friendly) --- */}
-            <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-300 shadow-lg flex justify-around items-center p-3 sm:hidden">
-                <button
-                    onClick={handleReset}
-                    disabled={loading || readingLoading}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all
-                        ${
-                            loading || readingLoading
-                                ? "text-gray-400 border-gray-300"
-                                : "text-gray-700 border-gray-300 hover:bg-gray-100"
-                        }`}
-                >
-                    Reset
-                </button>
-
-                <button
-                    onClick={handleReadPassage}
-                    disabled={readingLoading}
-                    className={`px-4 py-2 rounded-lg text-sm text-white font-medium transition-all
-                        ${
-                            readingLoading || isReadOnly
-                                ? "bg-gray-400"
-                                : "bg-emerald-600 hover:bg-emerald-700"
-                        }`}
-                >
-                    {readingLoading ? "Reading..." : "Read"}
-                </button>
-
-                <button
-                    onClick={handleSubmit}
-                    disabled={loading}
-                    className={`px-4 py-2 rounded-lg text-sm text-white font-medium transition-all
-                        ${
-                            loading || isReadOnly
-                                ? "bg-gray-400"
-                                : "bg-blue-600 hover:bg-blue-700"
-                        }`}
-                >
-                    {loading ? "Analyzing..." : "Analyze"}
-                </button>
-            </div>
         </div>
     );
 }
