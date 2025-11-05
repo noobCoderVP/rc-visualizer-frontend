@@ -11,15 +11,17 @@ export default function AnalyzerPage() {
     const [result, setResult] = useState<any>(null);
     const [passage, setPassage] = useState("");
     const [isReadOnly, setIsReadOnly] = useState(false);
-    const [readingView, setReadingView] = useState<string | null>(null); // 🆕 for Read Passage
-    const [readingLoading, setReadingLoading] = useState(false); // 🆕
+    const [readingView, setReadingView] = useState<string | null>(null);
+    const [readingLoading, setReadingLoading] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    // Modal state
+    const [modalText, setModalText] = useState<string | null>(null);
 
     useEffect(() => {
         setIsMounted(true);
     }, []);
 
-    // ✅ Auto resize textarea as user types
     useEffect(() => {
         if (textareaRef.current) {
             textareaRef.current.style.height = "auto";
@@ -27,7 +29,7 @@ export default function AnalyzerPage() {
         }
     }, [passage]);
 
-    // ✅ Analyze Passage handler
+    // ---------- Analyze Passage handler -------------
     async function handleSubmit() {
         const text = passage.trim();
         if (!text) return alert("Please enter a passage before analyzing.");
@@ -35,11 +37,14 @@ export default function AnalyzerPage() {
         setLoading(true);
         setIsReadOnly(true);
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/analyze`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ passage: text }),
-            });
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/analyze`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ passage: text }),
+                }
+            );
 
             const data = await res.json();
             setResult(data);
@@ -52,7 +57,7 @@ export default function AnalyzerPage() {
         }
     }
 
-    // 🆕 Read Passage / Mindmap view handler
+    // ---------- Read Passage handler -------------
     async function handleReadPassage() {
         const text = passage.trim();
         if (!text) return alert("Please enter a passage before reading.");
@@ -60,13 +65,16 @@ export default function AnalyzerPage() {
         setReadingLoading(true);
         setIsReadOnly(true);
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/mindmap`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ passage: text }),
-            });
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/mindmap`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ passage: text }),
+                }
+            );
 
-            const data = await res.text(); // response is HTML text
+            const data = await res.text();
             setReadingView(data);
         } catch (err) {
             console.error("Error fetching reading view:", err);
@@ -77,7 +85,30 @@ export default function AnalyzerPage() {
         }
     }
 
-    // ✅ Reset everything
+    // ---------- Click logic for modal (instead of tooltip) -------------
+    useEffect(() => {
+        if (!readingView) return;
+
+        const handleClick = (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            const wordEl = target.closest(
+                ".highlighted-word"
+            ) as HTMLElement | null;
+
+            if (wordEl) {
+                const tooltipText = wordEl.dataset.tooltip;
+                if (tooltipText) setModalText(tooltipText);
+            }
+        };
+
+        document.addEventListener("click", handleClick);
+        return () => document.removeEventListener("click", handleClick);
+    }, [readingView]);
+
+    function handleCloseModal() {
+        setModalText(null);
+    }
+
     function handleReset() {
         setPassage("");
         setResult(null);
@@ -93,7 +124,27 @@ export default function AnalyzerPage() {
         );
 
     return (
-        <div className="mx-auto max-w-[1300px] p-4 space-y-8">
+        <div className="mx-auto max-w-[1300px] p-4 space-y-8 relative">
+            {/* --- MODAL for Explanation --- */}
+            {modalText && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-md w-[90%] p-6 relative animate-fadeIn">
+                        <h3 className="text-lg font-semibold text-amber-700 mb-2">
+                            Explanation
+                        </h3>
+                        <p className="text-gray-800 leading-relaxed">
+                            {modalText}
+                        </p>
+                        <button
+                            onClick={handleCloseModal}
+                            className="mt-4 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* --- INPUT SECTION --- */}
             <div className="space-y-3">
                 <h2 className="text-xl font-semibold text-gray-700">
@@ -111,8 +162,7 @@ export default function AnalyzerPage() {
                             isReadOnly
                                 ? "bg-gray-50 text-[1.05rem] leading-relaxed font-serif cursor-not-allowed shadow-md"
                                 : "bg-white focus:shadow-lg"
-                        }
-                    `}
+                        }`}
                 />
 
                 {/* ✅ Buttons */}

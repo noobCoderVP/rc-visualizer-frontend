@@ -34,27 +34,72 @@ p {
   font-size: 1.05rem;
 }
 
-/* Highlighted words with tooltip */
+/* ==========================================
+   Highlighted words with TOOLTIP (mobile safe)
+   ========================================== */
 .highlighted-word {
-  background-color: #fff5cc; /* soft yellow */
+  position: relative;
+  background-color: lightgoldenrodyellow; /* soft yellow */
   padding: 2px 5px;
   border-radius: 6px;
-  position: relative;
   cursor: help;
   transition: background-color 0.25s ease;
-}
-
-.highlighted-word:hover {
-  background-color: #ffec99;
-}
-
-/* Tooltip styling for title attribute */
-.highlighted-word[title] {
   text-decoration: underline dotted #d97706; /* amber-600 */
   text-underline-offset: 3px;
 }
 
-/* Explanation block following each sentence */
+/* Hover/tap feedback */
+.highlighted-word:hover {
+  background-color: #ffec99;
+}
+
+/* Tooltip core styling */
+.highlighted-word::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease-in-out;
+  z-index: 50;
+}
+
+/* Tooltip arrow */
+.highlighted-word::before {
+  content: "";
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  z-index: 49;
+}
+
+/* Show tooltip on hover/focus/active */
+.highlighted-word:hover::after,
+.highlighted-word:hover::before,
+.highlighted-word:focus::after,
+.highlighted-word:focus::before,
+.highlighted-word:active::after,
+.highlighted-word:active::before {
+  opacity: 1;
+}
+
+/* ==========================================
+   Explanation block styling
+   ========================================== */
 .explanation {
   display: block;
   background: #f0f9ff; /* light blue */
@@ -66,13 +111,10 @@ p {
   font-size: 0.95rem;
   line-height: 1.5;
   font-family: system-ui, sans-serif;
-}
-
-/* Optional subtle fade-in animation for explanations */
-.explanation {
   animation: fadeIn 0.5s ease;
 }
 
+/* Optional subtle fade-in animation for explanations */
 @keyframes fadeIn {
   from {
     opacity: 0;
