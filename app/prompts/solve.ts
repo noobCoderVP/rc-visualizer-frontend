@@ -95,10 +95,10 @@ Output:
         "Step 3: Combine to infer tone = 'concerned or critical admiration'."
       ],
       "option_analysis": [
-        {"option": "A", "analysis": "Too positive; ignores the negative concern."},
-        {"option": "B", "analysis": "Balanced; shows both approval and concern — fits the tone."},
-        {"option": "C", "analysis": "Too negative; misses author's acknowledgment of benefits."},
-        {"option": "D", "analysis": "Irrelevant to passage theme."}
+        {"option": "A", "analysis": "(Option A text) Too positive; ignores the negative concern."},
+        {"option": "B", "analysis": "(Option B text) Balanced; shows both approval and concern — fits the tone."},
+        {"option": "C", "analysis": "(Option C text) Too negative; misses author's acknowledgment of benefits."},
+        {"option": "D", "analysis": "(Option D text) Irrelevant to passage theme."}
       ],
       "final_answer": "B",
       "cognitive_skill": "Tone inference using mixed sentiment analysis."
