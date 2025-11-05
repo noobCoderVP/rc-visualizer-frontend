@@ -14,6 +14,11 @@ export default function SolvePage() {
     const passageRef = useRef<HTMLTextAreaElement>(null);
     const questionsRef = useRef<HTMLTextAreaElement>(null);
 
+    // Scroll refs
+    const inputRef = useRef<HTMLDivElement | null>(null);
+    const summaryRef = useRef<HTMLDivElement | null>(null);
+    const questionsRefSection = useRef<HTMLDivElement | null>(null);
+
     useEffect(() => setIsMounted(true), []);
 
     // ✅ Auto-resize textareas
@@ -49,6 +54,12 @@ export default function SolvePage() {
 
             const data = await res.json();
             setResult(data);
+            // Scroll to results
+            setTimeout(
+                () =>
+                    summaryRef.current?.scrollIntoView({ behavior: "smooth" }),
+                300
+            );
         } catch (err) {
             console.error("Error solving:", err);
             alert("Something went wrong while solving. Please try again.");
@@ -63,19 +74,30 @@ export default function SolvePage() {
         setQuestions("");
         setResult(null);
         setIsReadOnly(false);
+        window.scrollTo({ top: 0, behavior: "smooth" });
     }
+
+    const scrollToSection = (ref: React.RefObject<HTMLDivElement | null>) => {
+        ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
 
     if (!isMounted)
         return <div className="p-4 text-gray-600 text-center">Loading...</div>;
 
     return (
-        <div className="mx-auto max-w-[1300px] p-4 space-y-8">
-            <h2 className="text-2xl font-semibold text-gray-800">RC Solver</h2>
+        <div className="relative mx-auto max-w-[1300px] p-4 pb-24 space-y-8">
+            {/* --- HEADER --- */}
+            <h2 className="text-2xl font-semibold text-gray-800 text-center sm:text-left">
+                RC Solver
+            </h2>
 
             {/* --- INPUT SECTION --- */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div
+                ref={inputRef}
+                className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+            >
                 <div>
-                    <h3 className="text-lg font-semibold text-gray-700">
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">
                         Passage
                     </h3>
                     <textarea
@@ -94,7 +116,7 @@ export default function SolvePage() {
                 </div>
 
                 <div>
-                    <h3 className="text-lg font-semibold text-gray-700">
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">
                         Questions
                     </h3>
                     <textarea
@@ -144,7 +166,7 @@ export default function SolvePage() {
 
             {/* --- RESULT SECTION --- */}
             {result && (
-                <div className="space-y-6">
+                <div ref={summaryRef} className="space-y-6 scroll-mt-24">
                     <SectionCard
                         title="Passage Summary"
                         color="bg-blue-50"
@@ -155,58 +177,99 @@ export default function SolvePage() {
                         </p>
                     </SectionCard>
 
-                    {result.questions_analysis?.map((q: any, index: number) => (
-                        <SectionCard
-                            key={index}
-                            title={`Q${index + 1}: ${q.question_type}`}
-                            color="bg-emerald-50"
-                            border="border-emerald-400"
-                        >
-                            <p className="text-gray-800 mb-2">
-                                <strong>Question:</strong> {q.question}
-                            </p>
-                            <p className="text-gray-700 mb-2">
-                                <strong>Clue Location:</strong>{" "}
-                                {q.clue_location}
-                            </p>
+                    <div
+                        ref={questionsRefSection}
+                        className="space-y-6 scroll-mt-24"
+                    >
+                        {result.questions_analysis?.map(
+                            (q: any, index: number) => (
+                                <SectionCard
+                                    key={index}
+                                    title={`Q${index + 1}: ${q.question_type}`}
+                                    color="bg-emerald-50"
+                                    border="border-emerald-400"
+                                >
+                                    <p className="text-gray-800 mb-2">
+                                        <strong>Question:</strong> {q.question}
+                                    </p>
+                                    <p className="text-gray-700 mb-2">
+                                        <strong>Clue Location:</strong>{" "}
+                                        {q.clue_location}
+                                    </p>
 
-                            <div className="my-3">
-                                <strong>Reasoning Steps:</strong>
-                                <ul className="list-decimal pl-6 text-gray-800">
-                                    {q.reasoning_steps?.map(
-                                        (step: string, i: number) => (
-                                            <li key={i}>{step}</li>
-                                        )
-                                    )}
-                                </ul>
-                            </div>
+                                    <div className="my-3">
+                                        <strong>Reasoning Steps:</strong>
+                                        <ul className="list-decimal pl-6 text-gray-800">
+                                            {q.reasoning_steps?.map(
+                                                (step: string, i: number) => (
+                                                    <li key={i}>{step}</li>
+                                                )
+                                            )}
+                                        </ul>
+                                    </div>
 
-                            <div className="my-3">
-                                <strong>Option Analysis:</strong>
-                                <ul className="list-disc pl-6 text-gray-800">
-                                    {q.option_analysis?.map(
-                                        (opt: any, i: number) => (
-                                            <li key={i}>
-                                                <strong>{opt.option} </strong>
-                                                {opt.analysis}
-                                            </li>
-                                        )
-                                    )}
-                                </ul>
-                            </div>
+                                    <div className="my-3">
+                                        <strong>Option Analysis:</strong>
+                                        <ul className="list-disc pl-6 text-gray-800">
+                                            {q.option_analysis?.map(
+                                                (opt: any, i: number) => (
+                                                    <li key={i}>
+                                                        <strong>
+                                                            {opt.option}{" "}
+                                                        </strong>
+                                                        {opt.analysis}
+                                                    </li>
+                                                )
+                                            )}
+                                        </ul>
+                                    </div>
 
-                            <p className="mt-2">
-                                <strong>Final Answer:</strong>{" "}
-                                <span className="text-blue-700 font-semibold">
-                                    {q.final_answer.toUpperCase()}
-                                </span>
-                            </p>
-                            <p>
-                                <strong>Cognitive Skill:</strong>{" "}
-                                {q.cognitive_skill}
-                            </p>
-                        </SectionCard>
-                    ))}
+                                    <p className="mt-2">
+                                        <strong>Final Answer:</strong>{" "}
+                                        <span className="text-blue-700 font-semibold">
+                                            {q.final_answer.toUpperCase()}
+                                        </span>
+                                    </p>
+                                    <p>
+                                        <strong>Cognitive Skill:</strong>{" "}
+                                        {q.cognitive_skill}
+                                    </p>
+                                </SectionCard>
+                            )
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* --- FLOATING NAV BAR --- */}
+            {result && (
+                <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 border-t border-gray-300 flex justify-around items-center p-2 sm:hidden backdrop-blur-sm shadow-lg">
+                    <button
+                        onClick={() => scrollToSection(inputRef)}
+                        className="text-sm text-gray-700 font-medium px-3 py-1 rounded-md hover:bg-gray-100"
+                    >
+                        Inputs
+                    </button>
+                    <button
+                        onClick={() => scrollToSection(summaryRef)}
+                        className="text-sm text-gray-700 font-medium px-3 py-1 rounded-md hover:bg-gray-100"
+                    >
+                        Summary
+                    </button>
+                    <button
+                        onClick={() => scrollToSection(questionsRefSection)}
+                        className="text-sm text-gray-700 font-medium px-3 py-1 rounded-md hover:bg-gray-100"
+                    >
+                        Questions
+                    </button>
+                    <button
+                        onClick={() =>
+                            window.scrollTo({ top: 0, behavior: "smooth" })
+                        }
+                        className="text-sm text-gray-700 font-medium px-3 py-1 rounded-md hover:bg-gray-100"
+                    >
+                        ↑ Top
+                    </button>
                 </div>
             )}
         </div>
