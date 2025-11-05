@@ -3,6 +3,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import SectionCard from "../components/SectionCard";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { RC_THOUGHT_SOLVER_PROMPT } from "../prompts/solve"; // ✅ Import your solve prompt
 
 export default function SolvePage() {
     const [loading, setLoading] = useState(false);
@@ -18,6 +20,17 @@ export default function SolvePage() {
     const inputRef = useRef<HTMLDivElement | null>(null);
     const summaryRef = useRef<HTMLDivElement | null>(null);
     const questionsRefSection = useRef<HTMLDivElement | null>(null);
+
+    // ✅ ENV detection
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+
+    const genAI =
+        !apiUrl && apiKey
+            ? new GoogleGenerativeAI(apiKey).getGenerativeModel({
+                  model: "gemini-2.0-flash",
+              })
+            : null;
 
     useEffect(() => setIsMounted(true), []);
 
@@ -35,6 +48,7 @@ export default function SolvePage() {
         }
     }, [questions]);
 
+    // ✅ Updated handleSubmit
     async function handleSubmit() {
         const p = passage.trim();
         const q = questions.trim();
@@ -43,18 +57,35 @@ export default function SolvePage() {
         setLoading(true);
         setIsReadOnly(true);
         try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/solve`,
-                {
+            let data: any;
+
+            // ---- Use backend if available ----
+            if (apiUrl) {
+                const res = await fetch(`${apiUrl}/solve`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ passage: p, questions: q }),
-                }
-            );
+                });
+                data = await res.json();
+            }
+            // ---- Use Gemini directly otherwise ----
+            else if (genAI) {
+                const prompt = `${RC_THOUGHT_SOLVER_PROMPT}\n\nPassage:\n${p}\n\nQuestions:\n${q}`;
+                const response = await genAI.generateContent(prompt);
+                const cleanText = response.response
+                    .text()
+                    .replace(/```json|```/g, "")
+                    .trim();
+                const jsonStart = cleanText.indexOf("{");
+                const jsonEnd = cleanText.lastIndexOf("}");
+                data = JSON.parse(cleanText.slice(jsonStart, jsonEnd + 1));
+            } else {
+                throw new Error(
+                    "No backend URL or Gemini API key found. Please configure one."
+                );
+            }
 
-            const data = await res.json();
             setResult(data);
-            // Scroll to results
             setTimeout(
                 () =>
                     summaryRef.current?.scrollIntoView({ behavior: "smooth" }),

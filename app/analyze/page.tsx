@@ -4,6 +4,9 @@
 import { useState, useEffect, useRef } from "react";
 import SectionCard from "../components/SectionCard";
 import TransitionVisualizer from "../components/TransitionVisualizer";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { RC_ANALYSIS_PROMPT } from "../prompts/analyze";
+import { RC_MINDMAP_PROMPT } from "../prompts/read";
 
 export default function AnalyzerPage() {
     const [loading, setLoading] = useState(false);
@@ -14,13 +17,19 @@ export default function AnalyzerPage() {
     const [readingView, setReadingView] = useState<string | null>(null);
     const [readingLoading, setReadingLoading] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-    // Modal state
     const [modalText, setModalText] = useState<string | null>(null);
 
-    useEffect(() => {
-        setIsMounted(true);
-    }, []);
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+
+    const genAI =
+        !apiUrl && apiKey
+            ? new GoogleGenerativeAI(apiKey).getGenerativeModel({
+                  model: "gemini-2.0-flash",
+              })
+            : null;
+
+    useEffect(() => setIsMounted(true), []);
 
     useEffect(() => {
         if (textareaRef.current) {
@@ -29,24 +38,41 @@ export default function AnalyzerPage() {
         }
     }, [passage]);
 
-    // ---------- Analyze Passage handler -------------
     async function handleSubmit() {
         const text = passage.trim();
         if (!text) return alert("Please enter a passage before analyzing.");
 
         setLoading(true);
         setIsReadOnly(true);
+
         try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/analyze`,
-                {
+            let data: any;
+
+            // ✅ Use backend if available
+            if (apiUrl) {
+                const res = await fetch(`${apiUrl}/analyze`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ passage: text }),
-                }
-            );
+                });
+                data = await res.json();
+            } else if (genAI) {
+                // ✅ Direct Gemini call if backend not present
+                const prompt = `${RC_ANALYSIS_PROMPT}\n\nPassage:\n${text}`;
+                const response = await genAI.generateContent(prompt);
+                const cleanText = response.response
+                    .text()
+                    .replace(/```json|```/g, "")
+                    .trim();
+                const jsonStart = cleanText.indexOf("{");
+                const jsonEnd = cleanText.lastIndexOf("}");
+                data = JSON.parse(cleanText.slice(jsonStart, jsonEnd + 1));
+            } else {
+                throw new Error(
+                    "No backend URL or Gemini API key found. Please configure one."
+                );
+            }
 
-            const data = await res.json();
             setResult(data);
         } catch (err) {
             console.error("Error analyzing passage:", err);
@@ -57,25 +83,37 @@ export default function AnalyzerPage() {
         }
     }
 
-    // ---------- Read Passage handler -------------
     async function handleReadPassage() {
         const text = passage.trim();
         if (!text) return alert("Please enter a passage before reading.");
 
         setReadingLoading(true);
         setIsReadOnly(true);
+
         try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/mindmap`,
-                {
+            let htmlData: string;
+
+            if (apiUrl) {
+                const res = await fetch(`${apiUrl}/mindmap`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ passage: text }),
-                }
-            );
+                });
+                htmlData = await res.text();
+            } else if (genAI) {
+                const prompt = `${RC_MINDMAP_PROMPT}\n\nPassage:\n${text}`;
+                const response = await genAI.generateContent(prompt);
+                htmlData = response.response
+                    .text()
+                    .replace(/```html|```/g, "")
+                    .trim();
+            } else {
+                throw new Error(
+                    "No backend URL or Gemini API key found. Please configure one."
+                );
+            }
 
-            const data = await res.text();
-            setReadingView(data);
+            setReadingView(htmlData);
         } catch (err) {
             console.error("Error fetching reading view:", err);
             alert("Something went wrong while fetching the reading view.");
@@ -85,22 +123,19 @@ export default function AnalyzerPage() {
         }
     }
 
-    // ---------- Click logic for modal (instead of tooltip) -------------
+    // ---------- Click logic for modal -------------
     useEffect(() => {
         if (!readingView) return;
-
         const handleClick = (e: MouseEvent) => {
             const target = e.target as HTMLElement;
             const wordEl = target.closest(
                 ".highlighted-word"
             ) as HTMLElement | null;
-
             if (wordEl) {
                 const tooltipText = wordEl.dataset.tooltip;
                 if (tooltipText) setModalText(tooltipText);
             }
         };
-
         document.addEventListener("click", handleClick);
         return () => document.removeEventListener("click", handleClick);
     }, [readingView]);
