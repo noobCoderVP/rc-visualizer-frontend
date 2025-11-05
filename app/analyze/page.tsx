@@ -126,6 +126,27 @@ export default function AnalyzerPage() {
     return (
         <div className="mx-auto max-w-[1300px] p-4 space-y-8 relative">
             {/* --- MODAL for Explanation --- */}
+            {modalText && (
+                <div className="fixed w-96 inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <div
+                        className="bg-white rounded-xl shadow-2xl max-w-[300px] p-5 sm:p-6 relative animate-fadeIn mx-auto overflow-hidden"
+                        style={{ wordWrap: "break-word" }}
+                    >
+                        <h3 className="text-lg font-semibold text-amber-700 mb-2 text-center">
+                            Explanation
+                        </h3>
+                        <p className="text-gray-800 leading-relaxed text-sm sm:text-base break-words">
+                            {modalText}
+                        </p>
+                        <button
+                            onClick={handleCloseModal}
+                            className="mt-4 w-full sm:w-auto px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* --- INPUT SECTION --- */}
             <div className="space-y-3">
