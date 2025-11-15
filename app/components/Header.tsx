@@ -31,6 +31,9 @@ export default function Header() {
                     <Link href="/vocab" className="hover:underline">
                         Vocabulary
                     </Link>
+                    <Link href="/comprehension" className="hover:underline">
+                        Comprehension
+                    </Link>
                     <Link href="/about" className="hover:underline">
                         About
                     </Link>
@@ -111,6 +114,13 @@ export default function Header() {
                             onClick={() => setMenuOpen(false)}
                         >
                             Vocabulary
+                        </Link>
+                        <Link
+                            href="/comprehension"
+                            className="hover:underline"
+                            onClick={() => setMenuOpen(false)}
+                        >
+                            Comprehension
                         </Link>
                         <Link
                             href="/about"
