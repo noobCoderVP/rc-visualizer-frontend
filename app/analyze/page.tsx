@@ -170,7 +170,7 @@ export default function AnalyzerPage() {
                         <h3 className="text-lg font-semibold text-amber-700 mb-2 text-center">
                             Explanation
                         </h3>
-                        <p className="text-gray-800 leading-relaxed text-sm sm:text-base break-words">
+                        <p className="text-gray-800 leading-relaxed text-sm sm:text-base wrap-break-word">
                             {modalText}
                         </p>
                         <button
