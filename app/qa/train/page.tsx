@@ -2,8 +2,8 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { CAT_TIMED_SOLVER_PROMPT } from "../prompts/trainer";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { CAT_TIMED_SOLVER_PROMPT } from "../../prompts/trainer";
+import { getGeminiModel } from "../../utils/gemini";
 
 export default function TimedSolverUI() {
     const [question, setQuestion] = useState("");
@@ -13,13 +13,7 @@ export default function TimedSolverUI() {
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-    const genAI =
-        !apiUrl && apiKey
-            ? new GoogleGenerativeAI(apiKey).getGenerativeModel({
-                  model: "gemini-2.5-flash",
-              })
-            : null;
+    const genAI = getGeminiModel();
 
     useEffect(() => {
         // auto-grow textarea

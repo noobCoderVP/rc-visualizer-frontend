@@ -2,11 +2,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import SectionCard from "../components/SectionCard";
-import TransitionVisualizer from "../components/TransitionVisualizer";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { RC_ANALYSIS_PROMPT } from "../prompts/analyze";
-import { RC_MINDMAP_PROMPT } from "../prompts/read";
+import SectionCard from "../../components/SectionCard";
+import TransitionVisualizer from "../../components/TransitionVisualizer";
+import { RC_ANALYSIS_PROMPT } from "../../prompts/analyze";
+import { RC_MINDMAP_PROMPT } from "../../prompts/read";
+import { getGeminiModel } from "../../utils/gemini";
 
 export default function AnalyzerPage() {
     const [loading, setLoading] = useState(false);
@@ -20,14 +20,8 @@ export default function AnalyzerPage() {
     const [modalText, setModalText] = useState<string | null>(null);
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
-    const genAI =
-        !apiUrl && apiKey
-            ? new GoogleGenerativeAI(apiKey).getGenerativeModel({
-                  model: "gemini-2.0-flash",
-              })
-            : null;
+    const genAI = getGeminiModel();
 
     useEffect(() => setIsMounted(true), []);
 

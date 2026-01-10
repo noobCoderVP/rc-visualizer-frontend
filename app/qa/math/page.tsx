@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import AdditionPractice from "../components/AdditionPractice";
-import MultiplicationPractice from "../components/MultiplicationPractice";
+import AdditionPractice from "../../components/AdditionPractice";
+import MultiplicationPractice from "../../components/MultiplicationPractice";
 
 export default function MathPracticePage() {
     const [mode, setMode] = useState<"addition" | "multiplication">("addition");

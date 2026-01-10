@@ -2,9 +2,9 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import SectionCard from "../components/SectionCard";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { RC_THOUGHT_SOLVER_PROMPT } from "../prompts/solve"; // ✅ Import your solve prompt
+import SectionCard from "../../components/SectionCard";
+import { RC_THOUGHT_SOLVER_PROMPT } from "../../prompts/solve"; // ✅ Import your solve prompt
+import { getGeminiModel } from "../../utils/gemini";
 
 export default function SolvePage() {
     const [loading, setLoading] = useState(false);
@@ -23,14 +23,8 @@ export default function SolvePage() {
 
     // ✅ ENV detection
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
-    const genAI =
-        !apiUrl && apiKey
-            ? new GoogleGenerativeAI(apiKey).getGenerativeModel({
-                  model: "gemini-2.0-flash",
-              })
-            : null;
+    const genAI = getGeminiModel();
 
     useEffect(() => setIsMounted(true), []);
 
