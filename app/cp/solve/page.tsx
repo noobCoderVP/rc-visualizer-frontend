@@ -2,28 +2,29 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
 import SectionCard from "../../components/SectionCard";
 import { CP_PSEUDOCODE_EXPLORER_PROMPT } from "@/app/prompts/cp/solve";
 import { getGeminiModel } from "../../utils/gemini";
+
+const MAX_INPUT_WIDTH = 900;
+const MAX_INPUT_HEIGHT = "70vh";
 
 export default function CPSolvePage() {
     const [loading, setLoading] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
     const [problem, setProblem] = useState("");
+    const [preview, setPreview] = useState(false);
     const [result, setResult] = useState<any>(null);
+
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     const genAI = getGeminiModel();
 
     useEffect(() => setIsMounted(true), []);
-
-    useEffect(() => {
-        if (textareaRef.current) {
-            textareaRef.current.style.height = "auto";
-            textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-        }
-    }, [problem]);
 
     async function handleSubmit() {
         const text = problem.trim();
@@ -44,10 +45,12 @@ export default function CPSolvePage() {
             } else if (genAI) {
                 const prompt = `${CP_PSEUDOCODE_EXPLORER_PROMPT}\n\nProblem:\n${text}`;
                 const response = await genAI.generateContent(prompt);
+
                 const cleanText = response.response
                     .text()
                     .replace(/```json|```/g, "")
                     .trim();
+
                 const jsonStart = cleanText.indexOf("{");
                 const jsonEnd = cleanText.lastIndexOf("}");
                 data = JSON.parse(cleanText.slice(jsonStart, jsonEnd + 1));
@@ -69,33 +72,80 @@ export default function CPSolvePage() {
         setResult(null);
     }
 
-    if (!isMounted)
+    if (!isMounted) {
         return (
-            <div className="p-4 text-center text-gray-600">
+            <div className="p-4 text-center text-gray-400">
                 Loading editor...
             </div>
         );
+    }
 
     return (
-        <div className="mx-auto max-w-[1200px] p-4 space-y-8">
-            {/* INPUT */}
-            <div className="space-y-3">
-                <h2 className="text-xl font-semibold text-gray-700">
-                    Enter CP Problem
-                </h2>
+        <div className="mx-auto max-w-[1200px] p-4 space-y-10">
+            {/* ================= INPUT ================= */}
+            <div className="mx-auto" style={{ maxWidth: MAX_INPUT_WIDTH }}>
+                <div className="flex items-center justify-between mb-2">
+                    <h2 className="text-lg font-semibold text-gray-800">
+                        Enter CP Problem
+                    </h2>
 
-                <textarea
-                    ref={textareaRef}
-                    value={problem}
-                    onChange={(e) => setProblem(e.target.value)}
-                    placeholder="Paste the full problem statement here..."
-                    className="w-full rounded-xl p-4 resize-none focus:outline-none shadow-sm bg-white"
-                />
+                    <button
+                        onClick={() => setPreview((p) => !p)}
+                        className="text-xs px-3 py-1 rounded-md bg-gray-800 text-gray-200 hover:bg-gray-700"
+                    >
+                        {preview ? "Edit" : "Preview"}
+                    </button>
+                </div>
 
-                <div className="flex justify-end gap-3">
+                <div
+                    className="rounded-xl shadow-sm overflow-hidden"
+                    style={{
+                        backgroundColor: "#0b1220",
+                        maxHeight: MAX_INPUT_HEIGHT,
+                    }}
+                >
+                    {!preview ? (
+                        <textarea
+                            ref={textareaRef}
+                            value={problem}
+                            onChange={(e) => setProblem(e.target.value)}
+                            placeholder="Paste the full problem statement here (Markdown supported)…"
+                            className="w-full resize-none p-4 focus:outline-none"
+                            style={{
+                                backgroundColor: "transparent",
+                                color: "#e5e7eb",
+                                fontFamily: "Georgia, serif",
+                                fontSize: 15,
+                                lineHeight: 1.7,
+                                minHeight: 240,
+                                maxHeight: MAX_INPUT_HEIGHT,
+                                overflowY: "auto",
+                            }}
+                        />
+                    ) : (
+                        <div
+                            className="p-4 overflow-y-auto"
+                            style={{
+                                color: "#e5e7eb",
+                                lineHeight: 1.75,
+                                maxHeight: MAX_INPUT_HEIGHT,
+                            }}
+                        >
+                            <div className="mb-3 text-xs text-gray-400 italic">
+                                Preview mode (read-only)
+                            </div>
+
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                {problem || "_Nothing to preview_"}
+                            </ReactMarkdown>
+                        </div>
+                    )}
+                </div>
+
+                <div className="flex justify-end gap-3 mt-4">
                     <button
                         onClick={handleReset}
-                        className="px-5 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100"
+                        className="px-5 py-2 rounded-lg border border-gray-600 text-gray-300 hover:bg-gray-800"
                     >
                         Reset
                     </button>
@@ -106,7 +156,7 @@ export default function CPSolvePage() {
                         className={`px-6 py-2 rounded-lg text-white font-medium
                             ${
                                 loading
-                                    ? "bg-gray-400 cursor-not-allowed"
+                                    ? "bg-gray-600 cursor-not-allowed"
                                     : "bg-emerald-600 hover:bg-emerald-700 shadow-md"
                             }`}
                     >
@@ -115,7 +165,7 @@ export default function CPSolvePage() {
                 </div>
             </div>
 
-            {/* RESULTS */}
+            {/* ================= RESULTS ================= */}
             {result?.approaches && (
                 <div className="space-y-6">
                     {result.approaches.map((app: any, idx: number) => (
