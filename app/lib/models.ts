@@ -12,6 +12,7 @@ export const MODEL_REGISTRY: Record<string, string[]> = {
         "llama-3.3-70b-versatile",
         "qwen/qwen3-32b",
         "moonshotai/kimi-k2-instruct",
+        "openai/gpt-oss-120b",
     ],
 
     openai: [
