@@ -26,16 +26,32 @@ ANALYSIS REQUIREMENTS:
 - Order them from most intuitive or brute force to most optimized or elegant.
 - Each approach must be clearly distinct in idea or complexity.
 
+CRITICAL PSEUDOCODE FORMATTING RULES (VERY IMPORTANT):
+- The pseudocode MUST be written as multiple lines.
+- Each line MUST be numbered starting from 1.
+- Each step MUST be on its own line.
+- Do NOT write the pseudocode as a single paragraph.
+- Do NOT combine multiple steps into one line.
+- Use clear action verbs per line.
+- Use simple words like IF, LOOP, FOR EACH, WHILE, UPDATE, RETURN.
+- Use line breaks between steps.
+- Example format (do NOT copy literally):
+
+  1. Initialize required variables
+  2. LOOP over the input elements
+  3. IF a condition is met
+  4. UPDATE the answer
+  5. RETURN the result
+
 FOR EACH APPROACH, INCLUDE:
 
 1. Idea Summary:
    - Briefly describe the core idea behind the approach.
 
 2. Pseudocode:
-   - Use simple step by step instructions written in plain English.
-   - Use words like IF, LOOP, FOR EACH, WHILE, UPDATE, RETURN.
-   - Avoid language specific keywords.
-   - Keep it concise and readable.
+   - Follow ALL pseudocode formatting rules above.
+   - The pseudocode MUST be a numbered list with one step per line.
+   - The pseudocode MUST span multiple lines.
 
 3. Time Complexity:
    - State the time complexity using Big O notation written in words.
