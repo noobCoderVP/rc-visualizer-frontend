@@ -7,7 +7,7 @@ import remarkGfm from "remark-gfm";
 
 import SectionCard from "../../components/SectionCard";
 import { CP_INTUITION_COACH_PROMPT } from "@/app/prompts/cp/hints";
-import { getGeminiModel } from "../../utils/gemini";
+import { generateText } from "@/app/lib/llm";
 
 const MAX_INPUT_WIDTH = 1600;
 const MAX_INPUT_HEIGHT = "70vh";
@@ -20,9 +20,7 @@ export default function CPHintsPage() {
     const [result, setResult] = useState<any>(null);
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    const genAI = getGeminiModel();
 
     useEffect(() => setIsMounted(true), []);
 
@@ -35,27 +33,33 @@ export default function CPHintsPage() {
         try {
             let data: any;
 
+            // 🔹 Prefer backend if configured
             if (apiUrl) {
                 const res = await fetch(`${apiUrl}/cp/hints`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ problem: text }),
                 });
-                data = await res.json();
-            } else if (genAI) {
-                const prompt = `${CP_INTUITION_COACH_PROMPT}\n\nProblem:\n${text}`;
-                const response = await genAI.generateContent(prompt);
 
-                const cleanText = response.response
-                    .text()
-                    .replace(/```json|```/g, "")
-                    .trim();
+                data = await res.json();
+            }
+            // 🔹 Otherwise use local LLM interface (provider-agnostic)
+            else {
+                const rawText = await generateText({
+                    systemPrompt: CP_INTUITION_COACH_PROMPT,
+                    userPrompt: `Problem:\n${text}`,
+                });
+
+                const cleanText = rawText.replace(/```json|```/g, "").trim();
 
                 const jsonStart = cleanText.indexOf("{");
                 const jsonEnd = cleanText.lastIndexOf("}");
+
+                if (jsonStart === -1 || jsonEnd === -1) {
+                    throw new Error("Invalid JSON output from model");
+                }
+
                 data = JSON.parse(cleanText.slice(jsonStart, jsonEnd + 1));
-            } else {
-                throw new Error("No backend or Gemini configuration found.");
             }
 
             setResult(data);

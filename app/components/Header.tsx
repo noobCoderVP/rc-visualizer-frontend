@@ -3,13 +3,54 @@
 import Link from "next/link";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import ModelSelector from "./header/ModelSelector";
+
+/* -------------------- Menu Config -------------------- */
+
+type MenuItem = {
+    label: string;
+    href: string;
+};
+
+type MenuSection = {
+    label: string;
+    items: MenuItem[];
+};
+
+const MENU_SECTIONS: MenuSection[] = [
+    {
+        label: "Quants",
+        items: [
+            { label: "Math", href: "/qa/math" },
+            { label: "Trainer", href: "/qa/train" },
+        ],
+    },
+    {
+        label: "VARC",
+        items: [
+            { label: "Vocabulary", href: "/varc/vocab" },
+            { label: "Comprehension", href: "/varc/comprehension" },
+            { label: "Analyze", href: "/varc/analyze" },
+        ],
+    },
+    {
+        label: "Competitive Programming",
+        items: [
+            { label: "Hints", href: "/cp/hints" },
+            { label: "Optimize", href: "/cp/optimize" },
+            { label: "Solve", href: "/cp/solve" },
+        ],
+    },
+];
+
+/* -------------------- Header -------------------- */
 
 export default function Header() {
     const [menuOpen, setMenuOpen] = useState(false);
 
     return (
-        <header className="border-b border-gray-800 bg-black text-white sticky top-0 z-50">
-            <nav className="container mx-auto flex justify-between items-center px-4 py-3 md:px-6">
+        <header className="sticky top-0 z-50 border-b border-gray-800 bg-black text-white">
+            <nav className="container mx-auto flex items-center justify-between px-4 py-3 md:px-6">
                 {/* Logo */}
                 <h1 className="text-lg md:text-xl font-bold tracking-wide">
                     Passage Visualizer
@@ -21,80 +62,25 @@ export default function Header() {
                         Home
                     </Link>
 
-                    {/* Quants Dropdown */}
-                    <div className="relative group">
-                        <span className="cursor-pointer hover:text-blue-400 transition">
-                            Quants ▾
-                        </span>
-                        <div className="absolute left-0 mt-2 w-40 bg-gray-900 border border-gray-700 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                            <Link
-                                href="/qa/math"
-                                className="block px-4 py-2 hover:bg-gray-800"
-                            >
-                                Math
-                            </Link>
-                            <Link
-                                href="/qa/train"
-                                className="block px-4 py-2 hover:bg-gray-800"
-                            >
-                                Trainer
-                            </Link>
-                        </div>
-                    </div>
+                    {MENU_SECTIONS.map((section) => (
+                        <div key={section.label} className="relative group">
+                            <span className="cursor-pointer hover:text-blue-400 transition">
+                                {section.label} ▾
+                            </span>
 
-                    {/* VARC Dropdown */}
-                    <div className="relative group">
-                        <span className="cursor-pointer hover:text-blue-400 transition">
-                            VARC ▾
-                        </span>
-                        <div className="absolute left-0 mt-2 w-44 bg-gray-900 border border-gray-700 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                            <Link
-                                href="/varc/vocab"
-                                className="block px-4 py-2 hover:bg-gray-800"
-                            >
-                                Vocabulary
-                            </Link>
-                            <Link
-                                href="/varc/comprehension"
-                                className="block px-4 py-2 hover:bg-gray-800"
-                            >
-                                Comprehension
-                            </Link>
-                            <Link
-                                href="/varc/analyze"
-                                className="block px-4 py-2 hover:bg-gray-800"
-                            >
-                                Analyze
-                            </Link>
+                            <div className="absolute left-0 mt-2 min-w-40 bg-gray-900 border border-gray-700 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                                {section.items.map((item) => (
+                                    <Link
+                                        key={item.href}
+                                        href={item.href}
+                                        className="block px-4 py-2 hover:bg-gray-800"
+                                    >
+                                        {item.label}
+                                    </Link>
+                                ))}
+                            </div>
                         </div>
-                    </div>
-
-                    {/* Competitive Programming Dropdown */}
-                    <div className="relative group">
-                        <span className="cursor-pointer hover:text-blue-400 transition">
-                            Competitive Programming ▾
-                        </span>
-                        <div className="absolute left-0 mt-2 w-48 bg-gray-900 border border-gray-700 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                            <Link
-                                href="/cp/hints"
-                                className="block px-4 py-2 hover:bg-gray-800"
-                            >
-                                Hints
-                            </Link>
-                            <Link
-                                href="/cp/optimize"
-                                className="block px-4 py-2 hover:bg-gray-800"
-                            >
-                                Optimize
-                            </Link>
-                            <Link
-                                href="/cp/solve"
-                                className="block px-4 py-2 hover:bg-gray-800"
-                            >
-                                Solve
-                            </Link>
-                        </div>
-                    </div>
+                    ))}
 
                     <Link
                         href="/about"
@@ -104,10 +90,15 @@ export default function Header() {
                     </Link>
                 </div>
 
-                {/* Mobile Menu Toggle */}
+                {/* Right Actions (Desktop) */}
+                <div className="hidden md:flex items-center gap-4">
+                    <ModelSelector />
+                </div>
+
+                {/* Mobile Toggle */}
                 <button
                     className="md:hidden focus:outline-none"
-                    onClick={() => setMenuOpen(!menuOpen)}
+                    onClick={() => setMenuOpen((v) => !v)}
                     aria-label="Toggle menu"
                 >
                     <svg
@@ -143,67 +134,38 @@ export default function Header() {
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        className="md:hidden bg-black border-t border-gray-800 px-4 py-3 space-y-3 text-sm"
+                        className="md:hidden bg-black border-t border-gray-800 px-4 py-3 space-y-4 text-sm"
                     >
                         <Link href="/" className="block">
                             Home
                         </Link>
 
-                        <div>
-                            <p className="font-semibold text-gray-400">
-                                Quants
-                            </p>
-                            <Link href="/qa/math" className="block pl-3 py-1">
-                                Math
-                            </Link>
-                            <Link href="/qa/train" className="block pl-3 py-1">
-                                Trainer
-                            </Link>
-                        </div>
+                        {MENU_SECTIONS.map((section) => (
+                            <div key={section.label}>
+                                <p className="font-semibold text-gray-400">
+                                    {section.label}
+                                </p>
 
-                        <div>
-                            <p className="font-semibold text-gray-400">VARC</p>
-                            <Link
-                                href="/varc/vocab"
-                                className="block pl-3 py-1"
-                            >
-                                Vocabulary
-                            </Link>
-                            <Link
-                                href="/varc/comprehension"
-                                className="block pl-3 py-1"
-                            >
-                                Comprehension
-                            </Link>
-                            <Link
-                                href="/varc/analyze"
-                                className="block pl-3 py-1"
-                            >
-                                Analyze
-                            </Link>
-                        </div>
-
-                        <div>
-                            <p className="font-semibold text-gray-400">
-                                Competitive Programming
-                            </p>
-                            <Link href="/cp/hints" className="block pl-3 py-1">
-                                Hints
-                            </Link>
-                            <Link
-                                href="/cp/optimize"
-                                className="block pl-3 py-1"
-                            >
-                                Optimize
-                            </Link>
-                            <Link href="/cp/solve" className="block pl-3 py-1">
-                                Solve
-                            </Link>
-                        </div>
+                                {section.items.map((item) => (
+                                    <Link
+                                        key={item.href}
+                                        href={item.href}
+                                        className="block pl-3 py-1"
+                                    >
+                                        {item.label}
+                                    </Link>
+                                ))}
+                            </div>
+                        ))}
 
                         <Link href="/about" className="block">
                             About
                         </Link>
+
+                        {/* Mobile Model Selector (optional but useful) */}
+                        <div className="pt-2 border-t border-gray-800">
+                            <ModelSelector />
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>
