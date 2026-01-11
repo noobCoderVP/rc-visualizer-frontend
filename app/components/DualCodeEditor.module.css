@@ -176,3 +176,23 @@
     height: 100%;
 }
 
+.headerActions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.historyBtn {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: #374151; /* gray-700 */
+    color: #e5e7eb;
+    border: none;
+    cursor: pointer;
+}
+
+.historyBtn:hover {
+    background: #4b5563; /* gray-600 */
+}
+

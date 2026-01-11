@@ -3,7 +3,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { CAT_TIMED_SOLVER_PROMPT } from "../../prompts/trainer";
-import { getGeminiModel } from "../../utils/gemini";
+import { generateText } from "@/app/lib/llm";
 
 export default function TimedSolverUI() {
     const [question, setQuestion] = useState("");
@@ -13,7 +13,6 @@ export default function TimedSolverUI() {
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    const genAI = getGeminiModel();
 
     useEffect(() => {
         // auto-grow textarea
@@ -34,14 +33,17 @@ export default function TimedSolverUI() {
     async function handleGenerate() {
         setError(null);
         const trimmed = question.trim();
-        if (!trimmed) return setError("Please paste a question first.");
+        if (!trimmed) {
+            return setError("Please paste a question first.");
+        }
 
         setLoading(true);
         setResult(null);
 
         try {
-            // If user configured a backend that accepts /timed-solver, use it
-            let data;
+            let data: any;
+
+            // 🔹 Prefer backend if configured
             if (apiUrl) {
                 const res = await fetch(
                     `${apiUrl.replace(/\/+$/, "")}/timed-solver`,
@@ -51,21 +53,32 @@ export default function TimedSolverUI() {
                         body: JSON.stringify({ question: trimmed }),
                     }
                 );
-                if (!res.ok) throw new Error(`Backend error ${res.status}`);
+
+                if (!res.ok) {
+                    throw new Error(`Backend error ${res.status}`);
+                }
+
                 data = await res.json();
-            } else if (genAI) {
-                // Minimal direct Gemini-style call placeholder (replace with actual SDK if needed)
-                // We'll POST to a generic proxy endpoint that a developer should implement.
-                const prompt = `${CAT_TIMED_SOLVER_PROMPT}\n\nPassage:\n${question}\n\nProvide the output in JSON format only.`;
-                const response = await genAI.generateContent(prompt);
-                const cleanText = response.response
-                .text()
-                .replace(/```json|```/g, "")
-                .trim();
+            }
+            // 🔹 Otherwise use local LLM interface (provider-agnostic)
+            else {
+                const rawText = await generateText({
+                    systemPrompt: CAT_TIMED_SOLVER_PROMPT,
+                    userPrompt: `Passage:\n${trimmed}\n\nProvide the output in JSON format only.`,
+                });
+
+                const cleanText = rawText.replace(/```json|```/g, "").trim();
+
                 const jsonStart = cleanText.indexOf("{");
                 const jsonEnd = cleanText.lastIndexOf("}");
+
+                if (jsonStart === -1 || jsonEnd === -1) {
+                    throw new Error("Invalid JSON output from model");
+                }
+
                 data = JSON.parse(cleanText.slice(jsonStart, jsonEnd + 1));
             }
+
             setResult(data);
         } catch (err: any) {
             console.error(err);
@@ -79,9 +92,6 @@ export default function TimedSolverUI() {
         if (!result) return;
         navigator.clipboard
             .writeText(JSON.stringify(result, null, 2))
-            .then(() => {
-                // small in-UI feedback could be added
-            })
             .catch(() => setError("Unable to copy to clipboard."));
     }
 
@@ -206,7 +216,6 @@ export default function TimedSolverUI() {
                                             </div>
                                         </div>
 
-                                        {/* small note about mental vs written */}
                                         {s.note && (
                                             <div className="mt-2 text-xs text-gray-600">
                                                 {s.note}
@@ -253,9 +262,8 @@ export default function TimedSolverUI() {
             {!result && (
                 <div className="mt-6 text-sm text-gray-500">
                     Tip: For best results include the options with the question.
-                    If you have a backend or Gemini key, configure{" "}
-                    <code>NEXT_PUBLIC_API_URL</code> or{" "}
-                    <code>NEXT_PUBLIC_GEMINI_API_KEY</code>.
+                    Configure a backend via <code>NEXT_PUBLIC_API_URL</code> or
+                    select a model in the header.
                 </div>
             )}
 

@@ -1,70 +1,75 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { useState } from "react";
 
 import SectionCard from "../../components/SectionCard";
+import ProblemEditor from "@/app/components/ProblemEditor";
+import ProblemHistoryModal from "@/app/components/ProblemHistoryModal";
+
+import { useProblemEditor } from "@/app/hooks/useProblemEditor";
+import { useProblemHistory } from "@/app/hooks/useProblemHistory";
+
 import { CP_INTUITION_COACH_PROMPT } from "@/app/prompts/cp/hints";
 import { generateText } from "@/app/lib/llm";
+import { ProblemHistoryItem } from "@/app/lib/problemHistoryStorage";
+import { getActiveModelLabel } from "@/app/lib/getActiveModel";
 
-const MAX_INPUT_WIDTH = 1600;
-const MAX_INPUT_HEIGHT = "70vh";
+/* ---------- Types ---------- */
+
+type CPHintsResult = {
+    restatement: string;
+    constraints_insight: string;
+    core_difficulty: string;
+    observations: string[];
+    algorithmic_direction: string[];
+    common_traps: string[];
+    guiding_questions: string[];
+};
 
 export default function CPHintsPage() {
     const [loading, setLoading] = useState(false);
-    const [isMounted, setIsMounted] = useState(false);
-    const [problem, setProblem] = useState("");
-    const [preview, setPreview] = useState(false);
-    const [result, setResult] = useState<any>(null);
+    const [result, setResult] = useState<CPHintsResult | null>(null);
+    const [historyOpen, setHistoryOpen] = useState(false);
 
-    const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const { problem, setProblem, preview, setPreview, resetEditor } =
+        useProblemEditor();
 
-    useEffect(() => setIsMounted(true), []);
+    const { history, saveRun, deleteRun } = useProblemHistory("hints");
 
     async function handleSubmit() {
         const text = problem.trim();
-        if (!text) return alert("Please enter a problem statement.");
+        if (!text) {
+            alert("Enter a problem.");
+            return;
+        }
 
         setLoading(true);
 
         try {
-            let data: any;
+            const raw = await generateText({
+                systemPrompt: CP_INTUITION_COACH_PROMPT,
+                userPrompt: `Problem:\n${text}`,
+            });
 
-            // 🔹 Prefer backend if configured
-            if (apiUrl) {
-                const res = await fetch(`${apiUrl}/cp/hints`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ problem: text }),
-                });
+            const clean = raw.replace(/```json|```/g, "").trim();
+            const jsonStart = clean.indexOf("{");
+            const jsonEnd = clean.lastIndexOf("}");
 
-                data = await res.json();
+            if (jsonStart === -1 || jsonEnd === -1) {
+                throw new Error("Invalid JSON output");
             }
-            // 🔹 Otherwise use local LLM interface (provider-agnostic)
-            else {
-                const rawText = await generateText({
-                    systemPrompt: CP_INTUITION_COACH_PROMPT,
-                    userPrompt: `Problem:\n${text}`,
-                });
 
-                const cleanText = rawText.replace(/```json|```/g, "").trim();
-
-                const jsonStart = cleanText.indexOf("{");
-                const jsonEnd = cleanText.lastIndexOf("}");
-
-                if (jsonStart === -1 || jsonEnd === -1) {
-                    throw new Error("Invalid JSON output from model");
-                }
-
-                data = JSON.parse(cleanText.slice(jsonStart, jsonEnd + 1));
-            }
+            const data: CPHintsResult = JSON.parse(
+                clean.slice(jsonStart, jsonEnd + 1)
+            );
 
             setResult(data);
+
+            // ✅ store model from llm_config
+            const modelLabel = getActiveModelLabel();
+            saveRun(text, data, modelLabel);
         } catch (err) {
-            console.error("Error generating hints:", err);
+            console.error(err);
             alert("Failed to generate hints.");
         } finally {
             setLoading(false);
@@ -72,101 +77,37 @@ export default function CPHintsPage() {
     }
 
     function handleReset() {
-        setProblem("");
+        resetEditor();
         setResult(null);
-    }
-
-    if (!isMounted) {
-        return (
-            <div className="p-4 text-center text-gray-400">
-                Loading editor...
-            </div>
-        );
     }
 
     return (
         <div className="mx-auto max-w-[1200px] p-4 space-y-10">
             {/* ================= INPUT ================= */}
-            <div className="mx-auto" style={{ maxWidth: MAX_INPUT_WIDTH }}>
-                <div className="flex items-center justify-between mb-2">
-                    <h2 className="text-lg font-semibold text-gray-800">
-                        Enter CP Problem
-                    </h2>
+            <ProblemEditor
+                title="Enter CP Problem"
+                problem={problem}
+                onChange={setProblem}
+                preview={preview}
+                onTogglePreview={() => setPreview((p) => !p)}
+                onOpenHistory={() => setHistoryOpen(true)}
+            />
 
-                    <button
-                        onClick={() => setPreview((p) => !p)}
-                        className="text-xs px-3 py-1 rounded-md bg-gray-800 text-gray-200 hover:bg-gray-700"
-                    >
-                        {preview ? "Edit" : "Preview"}
-                    </button>
-                </div>
-
-                <div
-                    className="rounded-xl shadow-sm overflow-hidden"
-                    style={{
-                        backgroundColor: "#0b1220",
-                        maxHeight: MAX_INPUT_HEIGHT,
-                    }}
+            <div className="flex justify-end gap-3 mt-4">
+                <button
+                    onClick={handleReset}
+                    className="px-5 py-2 rounded-lg border"
                 >
-                    {!preview ? (
-                        <textarea
-                            ref={textareaRef}
-                            value={problem}
-                            onChange={(e) => setProblem(e.target.value)}
-                            placeholder="Paste the full problem statement here (Markdown supported)…"
-                            className="w-full resize-none p-4 focus:outline-none"
-                            style={{
-                                backgroundColor: "transparent",
-                                color: "#e5e7eb",
-                                fontFamily: "Georgia, serif",
-                                fontSize: 15,
-                                lineHeight: 1.7,
-                                minHeight: 240,
-                                maxHeight: MAX_INPUT_HEIGHT,
-                                overflowY: "auto",
-                            }}
-                        />
-                    ) : (
-                        <div
-                            className="p-4 overflow-y-auto"
-                            style={{
-                                color: "#e5e7eb",
-                                lineHeight: 1.75,
-                                maxHeight: MAX_INPUT_HEIGHT,
-                            }}
-                        >
-                            <div className="mb-3 text-xs text-gray-400 italic">
-                                Preview mode (read-only)
-                            </div>
+                    Reset
+                </button>
 
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                {problem || "_Nothing to preview_"}
-                            </ReactMarkdown>
-                        </div>
-                    )}
-                </div>
-
-                <div className="flex justify-end gap-3 mt-4">
-                    <button
-                        onClick={handleReset}
-                        className="px-5 py-2 rounded-lg border border-gray-600 text-gray-300 hover:bg-gray-800"
-                    >
-                        Reset
-                    </button>
-
-                    <button
-                        onClick={handleSubmit}
-                        disabled={loading}
-                        className={`px-6 py-2 rounded-lg text-white font-medium
-                            ${
-                                loading
-                                    ? "bg-gray-600 cursor-not-allowed"
-                                    : "bg-indigo-600 hover:bg-indigo-700 shadow-md"
-                            }`}
-                    >
-                        {loading ? "Thinking..." : "Get Hints"}
-                    </button>
-                </div>
+                <button
+                    onClick={handleSubmit}
+                    disabled={loading}
+                    className="px-6 py-2 rounded-lg bg-indigo-600 text-white"
+                >
+                    {loading ? "Thinking..." : "Get Hints"}
+                </button>
             </div>
 
             {/* ================= RESULTS ================= */}
@@ -202,11 +143,9 @@ export default function CPHintsPage() {
                         border="border-purple-400"
                     >
                         <ul className="list-disc pl-6">
-                            {result.observations?.map(
-                                (o: string, i: number) => (
-                                    <li key={i}>{o}</li>
-                                )
-                            )}
+                            {result.observations.map((o, i) => (
+                                <li key={i}>{o}</li>
+                            ))}
                         </ul>
                     </SectionCard>
 
@@ -216,11 +155,9 @@ export default function CPHintsPage() {
                         border="border-pink-400"
                     >
                         <ul className="list-disc pl-6">
-                            {result.algorithmic_direction?.map(
-                                (a: string, i: number) => (
-                                    <li key={i}>{a}</li>
-                                )
-                            )}
+                            {result.algorithmic_direction.map((a, i) => (
+                                <li key={i}>{a}</li>
+                            ))}
                         </ul>
                     </SectionCard>
 
@@ -230,11 +167,9 @@ export default function CPHintsPage() {
                         border="border-red-400"
                     >
                         <ul className="list-disc pl-6">
-                            {result.common_traps?.map(
-                                (t: string, i: number) => (
-                                    <li key={i}>{t}</li>
-                                )
-                            )}
+                            {result.common_traps.map((t, i) => (
+                                <li key={i}>{t}</li>
+                            ))}
                         </ul>
                     </SectionCard>
 
@@ -244,14 +179,26 @@ export default function CPHintsPage() {
                         border="border-indigo-400"
                     >
                         <ul className="list-decimal pl-6">
-                            {result.guiding_questions?.map(
-                                (q: string, i: number) => (
-                                    <li key={i}>{q}</li>
-                                )
-                            )}
+                            {result.guiding_questions.map((q, i) => (
+                                <li key={i}>{q}</li>
+                            ))}
                         </ul>
                     </SectionCard>
                 </div>
+            )}
+
+            {/* ================= HISTORY ================= */}
+            {historyOpen && (
+                <ProblemHistoryModal
+                    items={history}
+                    onSelect={(item: ProblemHistoryItem) => {
+                        setProblem(item.problem);
+                        setResult(item.payload as CPHintsResult);
+                        setHistoryOpen(false);
+                    }}
+                    onDelete={deleteRun}
+                    onClose={() => setHistoryOpen(false)}
+                />
             )}
         </div>
     );

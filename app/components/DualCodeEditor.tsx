@@ -17,6 +17,9 @@ interface DualCodeEditorProps {
     solution: string;
     onProblemChange: (v: string) => void;
     onSolutionChange: (v: string) => void;
+
+    /** Optional: open history modal */
+    onOpenHistory?: () => void;
 }
 
 export default function DualCodeEditor({
@@ -24,6 +27,7 @@ export default function DualCodeEditor({
     solution,
     onProblemChange,
     onSolutionChange,
+    onOpenHistory,
 }: DualCodeEditorProps) {
     const [preview, setPreview] = useState(false);
 
@@ -33,12 +37,26 @@ export default function DualCodeEditor({
             <div className={styles.column}>
                 <div className={styles.header}>
                     <h3 className={styles.title}>Problem Statement</h3>
-                    <button
-                        onClick={() => setPreview((p) => !p)}
-                        className={styles.toggleBtn}
-                    >
-                        {preview ? "Edit" : "Preview"}
-                    </button>
+
+                    <div className={styles.headerActions}>
+                        {onOpenHistory && (
+                            <button
+                                onClick={onOpenHistory}
+                                className={styles.historyBtn}
+                                type="button"
+                            >
+                                History
+                            </button>
+                        )}
+
+                        <button
+                            onClick={() => setPreview((p) => !p)}
+                            className={styles.toggleBtn}
+                            type="button"
+                        >
+                            {preview ? "Edit" : "Preview"}
+                        </button>
+                    </div>
                 </div>
 
                 <div className={styles.problemContainer}>
@@ -63,7 +81,7 @@ export default function DualCodeEditor({
                 </div>
             </div>
 
-            {/* ================= Code Pane (REAL editor) ================= */}
+            {/* ================= Code Pane ================= */}
             <div className={styles.column}>
                 <h3 className={styles.title}>Your Solution Code</h3>
 
@@ -76,13 +94,13 @@ export default function DualCodeEditor({
                             theme="vs-dark"
                             options={{
                                 fontSize: 14,
-                                lineHeight: 22, // ✅ fixes line merging
-                                padding: { top: 12, bottom: 12 }, // ✅ visual breathing room
+                                lineHeight: 22,
+                                padding: { top: 12, bottom: 12 },
 
                                 minimap: { enabled: false },
                                 scrollBeyondLastLine: false,
 
-                                wordWrap: "on", // ✅ respects line breaks
+                                wordWrap: "on",
                                 wrappingIndent: "indent",
 
                                 automaticLayout: true,
@@ -92,10 +110,12 @@ export default function DualCodeEditor({
                                 cursorBlinking: "smooth",
                                 cursorSmoothCaretAnimation: "on",
 
-                                fontLigatures: false, // cleaner for CP
+                                fontLigatures: false,
                                 glyphMargin: false,
                                 folding: true,
-                                bracketPairColorization: { enabled: true },
+                                bracketPairColorization: {
+                                    enabled: true,
+                                },
                             }}
                         />
                     </div>
@@ -104,4 +124,3 @@ export default function DualCodeEditor({
         </div>
     );
 }
-

@@ -1,31 +1,47 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+
 import SectionCard from "../../components/SectionCard";
 import DualCodeEditor from "../../components/DualCodeEditor";
+import ProblemHistoryModal from "@/app/components/ProblemHistoryModal";
+
+import { useProblemEditor } from "@/app/hooks/useProblemEditor";
+import { useProblemHistory } from "@/app/hooks/useProblemHistory";
+
 import { CP_CODE_OPTIMIZER_PROMPT } from "@/app/prompts/cp/optimize";
-import { getGeminiModel } from "../../utils/gemini";
+import { generateText } from "@/app/lib/llm";
+import { ProblemHistoryItem } from "@/app/lib/problemHistoryStorage";
+import { getActiveModelLabel } from "@/app/lib/getActiveModel";
+
+/* ---------- Types ---------- */
+
+type CPOptimizeResult = {
+    assessment: string;
+    optimized_code: string;
+};
 
 export default function CPOptimizePage() {
     const [loading, setLoading] = useState(false);
-    const [isMounted, setIsMounted] = useState(false);
-    const [problem, setProblem] = useState("");
+    const [result, setResult] = useState<CPOptimizeResult | null>(null);
+    const [historyOpen, setHistoryOpen] = useState(false);
+
+    // Reuse common editor logic for problem text
+    const { problem, setProblem, resetEditor } = useProblemEditor();
+
     const [solution, setSolution] = useState("");
-    const [result, setResult] = useState<any>(null);
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    const genAI = getGeminiModel();
-
-    useEffect(() => setIsMounted(true), []);
+    const { history, saveRun, deleteRun } = useProblemHistory("optimize");
 
     async function handleSubmit() {
-        if (!solution.trim()) return alert("Please paste your solution code.");
+        if (!solution.trim()) {
+            alert("Please paste your solution code.");
+            return;
+        }
 
         setLoading(true);
 
         try {
-            let data: any;
             const combinedInput = `
 Problem:
 ${problem}
@@ -34,30 +50,30 @@ Code:
 ${solution}
 `;
 
-            if (apiUrl) {
-                const res = await fetch(`${apiUrl}/cp/optimize`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ input: combinedInput }),
-                });
-                data = await res.json();
-            } else if (genAI) {
-                const prompt = `${CP_CODE_OPTIMIZER_PROMPT}\n\n${combinedInput}`;
-                const response = await genAI.generateContent(prompt);
-                const cleanText = response.response
-                    .text()
-                    .replace(/```json|```/g, "")
-                    .trim();
-                const jsonStart = cleanText.indexOf("{");
-                const jsonEnd = cleanText.lastIndexOf("}");
-                data = JSON.parse(cleanText.slice(jsonStart, jsonEnd + 1));
-            } else {
-                throw new Error("No backend or Gemini configuration found.");
+            const raw = await generateText({
+                systemPrompt: CP_CODE_OPTIMIZER_PROMPT,
+                userPrompt: combinedInput,
+            });
+
+            const clean = raw.replace(/```json|```/g, "").trim();
+            const jsonStart = clean.indexOf("{");
+            const jsonEnd = clean.lastIndexOf("}");
+
+            if (jsonStart === -1 || jsonEnd === -1) {
+                throw new Error("Invalid JSON output");
             }
 
+            const data: CPOptimizeResult = JSON.parse(
+                clean.slice(jsonStart, jsonEnd + 1)
+            );
+
             setResult(data);
+
+            // ✅ store per-run history with model info
+            const modelLabel = getActiveModelLabel();
+            saveRun(problem, { ...data, solution }, modelLabel);
         } catch (err) {
-            console.error(err);
+            console.error("Error optimizing code:", err);
             alert("Failed to optimize code.");
         } finally {
             setLoading(false);
@@ -65,13 +81,10 @@ ${solution}
     }
 
     function handleReset() {
-        setProblem("");
+        resetEditor();
         setSolution("");
         setResult(null);
     }
-
-    if (!isMounted)
-        return <div className="p-4 text-center">Loading editor…</div>;
 
     return (
         <div className="mx-auto max-w-[1400px] p-4 space-y-8">
@@ -81,6 +94,7 @@ ${solution}
                 solution={solution}
                 onProblemChange={setProblem}
                 onSolutionChange={setSolution}
+                onOpenHistory={() => setHistoryOpen(true)}
             />
 
             <div className="flex justify-end gap-3">
@@ -126,6 +140,24 @@ ${solution}
                         </pre>
                     </SectionCard>
                 </div>
+            )}
+
+            {/* HISTORY MODAL */}
+            {historyOpen && (
+                <ProblemHistoryModal
+                    items={history}
+                    onSelect={(item: ProblemHistoryItem) => {
+                        setProblem(item.problem);
+                        setSolution(item.payload.solution);
+                        setResult({
+                            assessment: item.payload.assessment,
+                            optimized_code: item.payload.optimized_code,
+                        });
+                        setHistoryOpen(false);
+                    }}
+                    onDelete={deleteRun}
+                    onClose={() => setHistoryOpen(false)}
+                />
             )}
         </div>
     );
