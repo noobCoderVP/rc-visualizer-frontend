@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 
 import SectionCard from "../../components/SectionCard";
 import DualCodeEditor from "../../components/DualCodeEditor";
@@ -14,12 +15,30 @@ import { generateText } from "@/app/lib/llm";
 import { ProblemHistoryItem } from "@/app/lib/problemHistoryStorage";
 import { getActiveModelLabel } from "@/app/lib/getActiveModel";
 
+/* ---------- Monaco (SSR-safe) ---------- */
+const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
+    ssr: false,
+});
+
 /* ---------- Types ---------- */
 
 type CPOptimizeResult = {
     assessment: string;
+    original_complexity: {
+        time: string;
+        space: string;
+    };
+    bottlenecks: string[];
+    optimization_strategy: string;
     optimized_code: string;
+    optimized_complexity: {
+        time: string;
+        space: string;
+    };
+    concepts_used: string[];
+    edge_cases: string[];
 };
+
 
 export default function CPOptimizePage() {
     const [loading, setLoading] = useState(false);
@@ -28,7 +47,6 @@ export default function CPOptimizePage() {
 
     // Reuse common editor logic for problem text
     const { problem, setProblem, resetEditor } = useProblemEditor();
-
     const [solution, setSolution] = useState("");
 
     const { history, saveRun, deleteRun } = useProblemHistory("optimize");
@@ -69,7 +87,7 @@ ${solution}
 
             setResult(data);
 
-            // ✅ store per-run history with model info
+            // store per-run history with model info
             const modelLabel = getActiveModelLabel();
             saveRun(problem, { ...data, solution }, modelLabel);
         } catch (err) {
@@ -88,7 +106,7 @@ ${solution}
 
     return (
         <div className="mx-auto max-w-[1400px] p-4 space-y-8">
-            {/* INPUT */}
+            {/* ================= INPUT ================= */}
             <DualCodeEditor
                 problem={problem}
                 solution={solution}
@@ -119,30 +137,143 @@ ${solution}
                 </button>
             </div>
 
-            {/* RESULTS */}
+            {/* ================= RESULTS ================= */}
             {result && (
                 <div className="space-y-6">
+                    {/* ===== Assessment ===== */}
                     <SectionCard
-                        title="Assessment"
+                        title="Initial Code Assessment"
                         color="bg-blue-50"
                         border="border-blue-400"
                     >
                         <p>{result.assessment}</p>
                     </SectionCard>
 
+                    {/* ===== Original Complexity ===== */}
                     <SectionCard
-                        title="Optimized Code"
+                        title="Original Complexity Analysis"
+                        color="bg-yellow-50"
+                        border="border-yellow-400"
+                    >
+                        <ul className="list-disc pl-6 space-y-1">
+                            <li>
+                                Time Complexity:{" "}
+                                {result.original_complexity.time}
+                            </li>
+                            <li>
+                                Space Complexity:{" "}
+                                {result.original_complexity.space}
+                            </li>
+                        </ul>
+                    </SectionCard>
+
+                    {/* ===== Bottlenecks ===== */}
+                    <SectionCard
+                        title="Bottlenecks Identified"
+                        color="bg-red-50"
+                        border="border-red-400"
+                    >
+                        <ul className="list-disc pl-6 space-y-1">
+                            {result.bottlenecks.map((b, i) => (
+                                <li key={i}>{b}</li>
+                            ))}
+                        </ul>
+                    </SectionCard>
+
+                    {/* ===== Optimization Strategy ===== */}
+                    <SectionCard
+                        title="Optimization Strategy"
+                        color="bg-purple-50"
+                        border="border-purple-400"
+                    >
+                        <p>{result.optimization_strategy}</p>
+                    </SectionCard>
+
+                    {/* ===== Optimized Code ===== */}
+                    <SectionCard
+                        title="Optimized Code (Contest Ready)"
                         color="bg-slate-50"
                         border="border-slate-400"
                     >
-                        <pre className="rounded-lg bg-gray-900 text-gray-100 p-4 text-sm overflow-x-auto">
-                            {result.optimized_code}
-                        </pre>
+                        <MonacoEditor
+                            value={result.optimized_code}
+                            language="cpp"
+                            theme="vs-dark"
+                            height="800px"
+                            options={{
+                                readOnly: true,
+                                fontSize: 14,
+                                lineHeight: 22,
+                                padding: { top: 12, bottom: 12 },
+
+                                minimap: { enabled: false },
+                                scrollBeyondLastLine: false,
+
+                                wordWrap: "on",
+                                wrappingIndent: "indent",
+
+                                automaticLayout: true,
+                                renderWhitespace: "boundary",
+
+                                cursorBlinking: "smooth",
+                                cursorSmoothCaretAnimation: "on",
+
+                                glyphMargin: false,
+                                folding: true,
+                                bracketPairColorization: {
+                                    enabled: true,
+                                },
+                            }}
+                        />
+                    </SectionCard>
+
+                    {/* ===== Optimized Complexity ===== */}
+                    <SectionCard
+                        title="Optimized Complexity"
+                        color="bg-green-50"
+                        border="border-green-400"
+                    >
+                        <ul className="list-disc pl-6 space-y-1">
+                            <li>
+                                Time Complexity:{" "}
+                                {result.optimized_complexity.time}
+                            </li>
+                            <li>
+                                Space Complexity:{" "}
+                                {result.optimized_complexity.space}
+                            </li>
+                        </ul>
+                    </SectionCard>
+
+                    {/* ===== Concepts Used ===== */}
+                    <SectionCard
+                        title="Concepts Used"
+                        color="bg-indigo-50"
+                        border="border-indigo-400"
+                    >
+                        <ul className="list-disc pl-6 space-y-1">
+                            {result.concepts_used.map((c, i) => (
+                                <li key={i}>{c}</li>
+                            ))}
+                        </ul>
+                    </SectionCard>
+
+                    {/* ===== Edge Cases ===== */}
+                    <SectionCard
+                        title="Failure Modes and Edge Cases"
+                        color="bg-pink-50"
+                        border="border-pink-400"
+                    >
+                        <ul className="list-disc pl-6 space-y-1">
+                            {result.edge_cases.map((e, i) => (
+                                <li key={i}>{e}</li>
+                            ))}
+                        </ul>
                     </SectionCard>
                 </div>
             )}
 
-            {/* HISTORY MODAL */}
+            {/* ================= HISTORY MODAL ================= */}
             {historyOpen && (
                 <ProblemHistoryModal
                     items={history}
@@ -151,7 +282,20 @@ ${solution}
                         setSolution(item.payload.solution);
                         setResult({
                             assessment: item.payload.assessment,
+                            original_complexity: {
+                                time: item.payload.original_complexity.time,
+                                space: item.payload.original_complexity.space,
+                            },
+                            bottlenecks: item.payload.bottlenecks,
+                            optimization_strategy:
+                                item.payload.optimization_strategy,
                             optimized_code: item.payload.optimized_code,
+                            optimized_complexity: {
+                                time: item.payload.optimized_complexity.time,
+                                space: item.payload.optimized_complexity.space,
+                            },
+                            concepts_used: item.payload.concepts_used,
+                            edge_cases: item.payload.edge_cases,
                         });
                         setHistoryOpen(false);
                     }}
