@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 
 import SectionCard from "../../components/SectionCard";
 import ProblemEditor from "@/app/components/ProblemEditor";
@@ -14,11 +15,16 @@ import { generateText } from "@/app/lib/llm";
 import { ProblemHistoryItem } from "@/app/lib/problemHistoryStorage";
 import { getActiveModelLabel } from "@/app/lib/getActiveModel";
 
+/* ---------- Monaco (SSR-safe) ---------- */
+const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
+    ssr: false,
+});
+
 /* ---------- Types ---------- */
 
 type CPSolveApproach = {
     idea: string;
-    pseudocode: string;
+    code: string; // ⬅️ changed from pseudocode
     time_complexity: string;
     space_complexity: string;
     concepts_required: string[];
@@ -68,12 +74,11 @@ export default function CPSolvePage() {
 
             setResult(data);
 
-            // ✅ Save run with model from llm_config
             const modelLabel = getActiveModelLabel();
             saveRun(text, data, modelLabel);
         } catch (err) {
-            console.error("Error generating pseudocode:", err);
-            alert("Failed to generate pseudocode approaches.");
+            console.error("Error generating approaches:", err);
+            alert("Failed to generate solution approaches.");
         } finally {
             setLoading(false);
         }
@@ -133,11 +138,45 @@ export default function CPSolvePage() {
                                     <strong>Idea:</strong> {app.idea}
                                 </p>
 
+                                {/* ===== Code (Read-only Monaco) ===== */}
                                 <div>
-                                    <strong>Pseudocode:</strong>
-                                    <pre className="mt-2 rounded-lg bg-gray-900 text-gray-100 p-4 text-sm overflow-x-auto">
-                                        {app.pseudocode}
-                                    </pre>
+                                    <strong>Step-wise C++ Code:</strong>
+                                    <div className="mt-2">
+                                        <MonacoEditor
+                                            value={app.code}
+                                            language="cpp"
+                                            theme="vs-dark"
+                                            height="600px"
+                                            options={{
+                                                readOnly: true,
+                                                fontSize: 14,
+                                                lineHeight: 22,
+                                                padding: {
+                                                    top: 12,
+                                                    bottom: 12,
+                                                },
+
+                                                minimap: { enabled: false },
+                                                scrollBeyondLastLine: false,
+
+                                                wordWrap: "on",
+                                                wrappingIndent: "indent",
+
+                                                automaticLayout: true,
+                                                renderWhitespace: "boundary",
+
+                                                cursorBlinking: "smooth",
+                                                cursorSmoothCaretAnimation:
+                                                    "on",
+
+                                                glyphMargin: false,
+                                                folding: true,
+                                                bracketPairColorization: {
+                                                    enabled: true,
+                                                },
+                                            }}
+                                        />
+                                    </div>
                                 </div>
 
                                 <p>
