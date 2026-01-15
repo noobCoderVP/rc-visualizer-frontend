@@ -37,11 +37,14 @@ const MENU_SECTIONS: MenuSection[] = [
         label: "Competitive Programming",
         items: [
             { label: "Hints", href: "/cp/hints" },
-            { label: "Optimize", href: "/cp/optimize" },
             { label: "Solve", href: "/cp/solve" },
+            { label: "Dry Run", href: "/cp/dryrun" }, // ✅ added
+            { label: "Testcases", href: "/cp/tests" }, // ✅ added
+            { label: "Optimize", href: "/cp/optimize" },
         ],
     },
 ];
+
 
 /* -------------------- Header -------------------- */
 

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { nanoid } from "nanoid";
 
-export type ToolType = "hints" | "solve" | "optimize";
+export type ToolType = "hints" | "solve" | "optimize" | "dryrun" | "testcases";
 
 export type ProblemHistoryItem = {
     id: string;
