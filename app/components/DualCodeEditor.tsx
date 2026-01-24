@@ -20,6 +20,9 @@ interface DualCodeEditorProps {
 
     /** Optional: open history modal */
     onOpenHistory?: () => void;
+
+    /** If true, solution code is optional (Reason page etc.) */
+    solutionOptional?: boolean;
 }
 
 export default function DualCodeEditor({
@@ -28,6 +31,7 @@ export default function DualCodeEditor({
     onProblemChange,
     onSolutionChange,
     onOpenHistory,
+    solutionOptional = false,
 }: DualCodeEditorProps) {
     const [preview, setPreview] = useState(false);
 
@@ -83,7 +87,12 @@ export default function DualCodeEditor({
 
             {/* ================= Code Pane ================= */}
             <div className={styles.column}>
-                <h3 className={styles.title}>Your Solution Code</h3>
+                <h3 className={styles.title}>
+                    Your Solution Code{" "}
+                    {solutionOptional && (
+                        <span className={styles.optionalTag}>(optional)</span>
+                    )}
+                </h3>
 
                 <div className={styles.codeContainer}>
                     <div className={styles.codeEditorWrapper}>

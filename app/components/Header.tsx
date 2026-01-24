@@ -41,6 +41,7 @@ const MENU_SECTIONS: MenuSection[] = [
             { label: "Dry Run", href: "/cp/dryrun" }, // ✅ added
             { label: "Testcases", href: "/cp/tests" }, // ✅ added
             { label: "Optimize", href: "/cp/optimize" },
+            { label: "Reason", href: "/cp/reason" },
         ],
     },
 ];
