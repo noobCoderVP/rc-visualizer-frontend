@@ -2,6 +2,11 @@
 
 :root {
   --font-roboto: "Roboto", sans-serif;
+  --page-bg: #f6f8fb;
+  --surface: rgba(255, 255, 255, 0.9);
+  --border-soft: #d9e0ea;
+  --text-main: #111827;
+  --accent: #0f766e;
 }
 
 html,
@@ -9,8 +14,11 @@ body {
   margin: 0;
   padding: 0;
   font-family: var(--font-roboto);
-  background-color: #ffffff;
-  color: #000000;
+  background:
+    radial-gradient(circle at top left, rgba(153, 246, 228, 0.35), transparent 26%),
+    radial-gradient(circle at top right, rgba(191, 219, 254, 0.35), transparent 24%),
+    linear-gradient(180deg, #fbfdff 0%, var(--page-bg) 100%);
+  color: var(--text-main);
 }
 
 a {
@@ -31,6 +39,7 @@ p {
   line-height: 1.7;
   font-family: 'Georgia', 'Times New Roman', serif;
   font-size: 1.05rem;
+  color: var(--text-main);
 }
 
 /* ==========================================
@@ -99,4 +108,41 @@ p {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8; /* slate-400 */
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.app-shell {
+  background: transparent;
+}
+
+.glass-panel {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(14px);
+}
+
+.latex-renderer ul,
+.latex-renderer ol {
+  color: var(--text-main);
+}
+
+.latex-renderer .katex-display {
+  margin: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.latex-renderer .katex {
+  white-space: normal;
+}
+
+.latex-renderer .latex-inline .katex {
+  font-size: 1.04em;
 }

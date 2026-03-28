@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import ModelSelector from "./header/ModelSelector";
-
-/* -------------------- Menu Config -------------------- */
 
 type MenuItem = {
     label: string;
@@ -31,6 +30,7 @@ const MENU_SECTIONS: MenuSection[] = [
             { label: "Vocabulary", href: "/varc/vocab" },
             { label: "Comprehension", href: "/varc/comprehension" },
             { label: "Analyze", href: "/varc/analyze" },
+            { label: "Solve", href: "/varc/solve" },
         ],
     },
     {
@@ -38,46 +38,60 @@ const MENU_SECTIONS: MenuSection[] = [
         items: [
             { label: "Hints", href: "/cp/hints" },
             { label: "Solve", href: "/cp/solve" },
-            { label: "Dry Run", href: "/cp/dryrun" }, // ✅ added
-            { label: "Testcases", href: "/cp/tests" }, // ✅ added
+            { label: "Dry Run", href: "/cp/dryrun" },
+            { label: "Testcases", href: "/cp/tests" },
             { label: "Optimize", href: "/cp/optimize" },
             { label: "Reason", href: "/cp/reason" },
         ],
     },
 ];
 
-
-/* -------------------- Header -------------------- */
-
 export default function Header() {
     const [menuOpen, setMenuOpen] = useState(false);
+    const pathname = usePathname();
+
+    const isActive = (href: string) => pathname === href;
 
     return (
-        <header className="sticky top-0 z-50 border-b border-gray-800 bg-black text-white">
-            <nav className="container mx-auto flex items-center justify-between px-4 py-3 md:px-6">
-                {/* Logo */}
-                <h1 className="text-lg md:text-xl font-bold tracking-wide">
-                    Passage Visualizer
-                </h1>
+        <header className="sticky top-0 z-50 border-b border-white/60 bg-white/75 text-slate-900 backdrop-blur-xl">
+            <nav className="container mx-auto flex items-center justify-between gap-4 px-4 py-3 md:px-6">
+                <Link href="/" className="min-w-0">
+                    <p className="mb-0 text-[11px] font-semibold uppercase tracking-[0.32em] text-teal-700">
+                        RC Visualizer
+                    </p>
+                    <h1 className="mb-0 truncate text-lg font-bold tracking-tight md:text-xl">
+                        Practice With Better AI Structure
+                    </h1>
+                </Link>
 
-                {/* Desktop Menu */}
-                <div className="hidden md:flex items-center space-x-8 text-sm font-medium">
-                    <Link href="/" className="hover:text-blue-400 transition">
+                <div className="hidden items-center space-x-3 text-sm font-medium md:flex">
+                    <Link
+                        href="/"
+                        className={`rounded-full px-3 py-2 transition ${
+                            isActive("/")
+                                ? "bg-slate-900 text-white"
+                                : "text-slate-700 hover:bg-slate-100"
+                        }`}
+                    >
                         Home
                     </Link>
 
                     {MENU_SECTIONS.map((section) => (
-                        <div key={section.label} className="relative group">
-                            <span className="cursor-pointer hover:text-blue-400 transition">
-                                {section.label} ▾
+                        <div key={section.label} className="group relative">
+                            <span className="cursor-pointer rounded-full px-3 py-2 text-slate-700 transition hover:bg-slate-100">
+                                {section.label} v
                             </span>
 
-                            <div className="absolute left-0 mt-2 min-w-40 bg-gray-900 border border-gray-700 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                            <div className="invisible absolute left-0 mt-2 min-w-52 rounded-2xl border border-slate-200 bg-white p-2 opacity-0 shadow-xl transition-all duration-200 group-hover:visible group-hover:opacity-100">
                                 {section.items.map((item) => (
                                     <Link
                                         key={item.href}
                                         href={item.href}
-                                        className="block px-4 py-2 hover:bg-gray-800"
+                                        className={`block rounded-xl px-4 py-2.5 ${
+                                            isActive(item.href)
+                                                ? "bg-slate-900 text-white"
+                                                : "text-slate-700 hover:bg-slate-100"
+                                        }`}
                                     >
                                         {item.label}
                                     </Link>
@@ -85,24 +99,15 @@ export default function Header() {
                             </div>
                         </div>
                     ))}
-
-                    <Link
-                        href="/about"
-                        className="hover:text-blue-400 transition"
-                    >
-                        About
-                    </Link>
                 </div>
 
-                {/* Right Actions (Desktop) */}
-                <div className="hidden md:flex items-center gap-4">
+                <div className="hidden items-center gap-4 md:flex">
                     <ModelSelector />
                 </div>
 
-                {/* Mobile Toggle */}
                 <button
-                    className="md:hidden focus:outline-none"
-                    onClick={() => setMenuOpen((v) => !v)}
+                    className="rounded-xl border border-slate-200 bg-white p-2 text-slate-700 shadow-sm md:hidden"
+                    onClick={() => setMenuOpen((value) => !value)}
                     aria-label="Toggle menu"
                 >
                     <svg
@@ -131,22 +136,28 @@ export default function Header() {
                 </button>
             </nav>
 
-            {/* Mobile Menu */}
             <AnimatePresence>
                 {menuOpen && (
                     <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        className="md:hidden bg-black border-t border-gray-800 px-4 py-3 space-y-4 text-sm"
+                        className="border-t border-slate-200 bg-white/95 px-4 py-4 text-sm shadow-lg backdrop-blur-xl md:hidden"
                     >
-                        <Link href="/" className="block">
+                        <Link
+                            href="/"
+                            className={`block rounded-xl px-3 py-2 ${
+                                isActive("/")
+                                    ? "bg-slate-900 text-white"
+                                    : "text-slate-700"
+                            }`}
+                        >
                             Home
                         </Link>
 
                         {MENU_SECTIONS.map((section) => (
-                            <div key={section.label}>
-                                <p className="font-semibold text-gray-400">
+                            <div key={section.label} className="mt-4">
+                                <p className="mb-2 font-semibold text-slate-500">
                                     {section.label}
                                 </p>
 
@@ -154,7 +165,11 @@ export default function Header() {
                                     <Link
                                         key={item.href}
                                         href={item.href}
-                                        className="block pl-3 py-1"
+                                        className={`block rounded-lg px-3 py-2 ${
+                                            isActive(item.href)
+                                                ? "bg-slate-900 text-white"
+                                                : "text-slate-700"
+                                        }`}
                                     >
                                         {item.label}
                                     </Link>
@@ -162,12 +177,7 @@ export default function Header() {
                             </div>
                         ))}
 
-                        <Link href="/about" className="block">
-                            About
-                        </Link>
-
-                        {/* Mobile Model Selector (optional but useful) */}
-                        <div className="pt-2 border-t border-gray-800">
+                        <div className="mt-4 border-t border-slate-200 pt-3">
                             <ModelSelector />
                         </div>
                     </motion.div>

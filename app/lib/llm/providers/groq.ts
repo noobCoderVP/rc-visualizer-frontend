@@ -5,6 +5,8 @@ import type { ChatCompletionMessageParam } from "groq-sdk/resources/chat/complet
 
 import { LLMRequest, LLMResponse } from "../types";
 
+const MAX_COMPLETION_TOKENS = 12000;
+
 export async function callGroq(
     apiKey: string,
     model: string,
@@ -33,6 +35,7 @@ export async function callGroq(
     const res = await client.chat.completions.create({
         model,
         messages,
+        max_completion_tokens: MAX_COMPLETION_TOKENS,
     });
 
     return {

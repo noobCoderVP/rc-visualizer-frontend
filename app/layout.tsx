@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
+import "katex/dist/katex.min.css";
 import "./globals.css";
 import Header from "./components/Header"; // ✅ client component
 import Footer from "./components/Footer"; // ✅ separate footer
@@ -23,7 +24,7 @@ export default function RootLayout({
 }) {
     return (
         <html lang="en" className={roboto.variable}>
-            <body className="bg-white text-black antialiased flex flex-col min-h-screen">
+            <body className="app-shell flex min-h-screen flex-col antialiased">
                 <Header />
                 <main className="flex-1 container mx-auto px-4 md:px-6 py-6 md:py-10">
                     {children}

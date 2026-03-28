@@ -23,16 +23,13 @@ export default function ModelSelectorModal({
     const [apiKey, setApiKey] = useState("");
     const [showKey, setShowKey] = useState(false);
 
-    /* -------------------- Prefill from localStorage -------------------- */
     useEffect(() => {
         const stored = loadLLMConfig();
         if (!stored) return;
 
-        // Validate provider
         if (stored.provider && MODEL_REGISTRY[stored.provider]) {
             setProvider(stored.provider);
 
-            // Validate model under provider
             if (
                 stored.model &&
                 MODEL_REGISTRY[stored.provider].includes(stored.model)
@@ -43,12 +40,10 @@ export default function ModelSelectorModal({
             }
         }
 
-        // Decode API key if present
         if (stored.apiKey) {
             try {
                 setApiKey(decodeKey(stored.apiKey));
             } catch {
-                // corrupted key, ignore silently
                 setApiKey("");
             }
         }
@@ -73,77 +68,72 @@ export default function ModelSelectorModal({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.96, y: 10 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
-                onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-lg rounded-xl border border-gray-800 bg-gray-950 shadow-2xl"
+                onClick={(event) => event.stopPropagation()}
+                className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white shadow-2xl"
             >
-                {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
+                <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
                     <div>
-                        <h2 className="text-lg font-semibold text-white">
+                        <h2 className="text-lg font-semibold text-slate-900">
                             Model Configuration
                         </h2>
-                        <p className="text-xs text-gray-400">
-                            Choose provider, model, and API credentials
+                        <p className="text-xs text-slate-500">
+                            Choose provider, model, and API credentials.
                         </p>
                     </div>
 
                     <button
                         onClick={onClose}
-                        className="rounded-md p-1 text-gray-400 hover:bg-gray-800 hover:text-white transition"
+                        className="rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-900"
                     >
-                        ✕
+                        X
                     </button>
                 </div>
 
-                {/* Body */}
-                <div className="px-6 py-5 space-y-5">
-                    {/* Provider */}
+                <div className="space-y-5 px-6 py-5">
                     <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-1">
+                        <label className="mb-1 block text-xs font-medium text-slate-500">
                             Provider
                         </label>
                         <select
                             value={provider}
-                            onChange={(e) => {
-                                const p = e.target.value;
-                                setProvider(p);
-                                setModel(MODEL_REGISTRY[p][0]);
+                            onChange={(event) => {
+                                const nextProvider = event.target.value;
+                                setProvider(nextProvider);
+                                setModel(MODEL_REGISTRY[nextProvider][0]);
                             }}
-                            className="w-full rounded-md border border-gray-800 bg-black px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500"
                         >
-                            {providers.map((p) => (
-                                <option key={p} value={p}>
-                                    {p.toUpperCase()}
+                            {providers.map((item) => (
+                                <option key={item} value={item}>
+                                    {item.toUpperCase()}
                                 </option>
                             ))}
                         </select>
                     </div>
 
-                    {/* Model */}
                     <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-1">
+                        <label className="mb-1 block text-xs font-medium text-slate-500">
                             Model
                         </label>
                         <select
                             value={model}
-                            onChange={(e) => setModel(e.target.value)}
-                            className="w-full rounded-md border border-gray-800 bg-black px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            onChange={(event) => setModel(event.target.value)}
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500"
                         >
-                            {MODEL_REGISTRY[provider].map((m) => (
-                                <option key={m} value={m}>
-                                    {m}
+                            {MODEL_REGISTRY[provider].map((item) => (
+                                <option key={item} value={item}>
+                                    {item}
                                 </option>
                             ))}
                         </select>
-                        <div className="mt-1 text-[11px] text-gray-500">
-                            Selected model will be used across hints, solve, and
-                            optimization.
+                        <div className="mt-1 text-[11px] text-slate-500">
+                            Higher-capacity responses are enabled to reduce
+                            truncation during longer solves and explanations.
                         </div>
                     </div>
 
-                    {/* API Key */}
                     <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-1">
+                        <label className="mb-1 block text-xs font-medium text-slate-500">
                             API Key
                         </label>
 
@@ -151,38 +141,37 @@ export default function ModelSelectorModal({
                             <input
                                 type={showKey ? "text" : "password"}
                                 value={apiKey}
-                                onChange={(e) => setApiKey(e.target.value)}
-                                placeholder="sk-••••••••••••••••"
-                                className="w-full rounded-md border border-gray-800 bg-black px-3 py-2 pr-10 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                onChange={(event) => setApiKey(event.target.value)}
+                                placeholder="Paste provider API key"
+                                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 pr-10 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500"
                             />
                             <button
                                 type="button"
-                                onClick={() => setShowKey((v) => !v)}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400 hover:text-white"
+                                onClick={() => setShowKey((value) => !value)}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-500 hover:text-slate-900"
                             >
                                 {showKey ? "Hide" : "Show"}
                             </button>
                         </div>
 
-                        <div className="mt-1 text-[11px] text-gray-500">
-                            Stored locally (base64-encoded). Never sent
-                            automatically.
+                        <div className="mt-1 text-[11px] text-slate-500">
+                            Stored locally in the browser. It is not submitted
+                            until you run a generation request.
                         </div>
                     </div>
                 </div>
 
-                {/* Footer */}
-                <div className="flex items-center justify-between px-6 py-4 border-t border-gray-800 bg-gray-950/50">
+                <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50/70 px-6 py-4">
                     <button
                         onClick={onClose}
-                        className="text-sm text-gray-400 hover:text-white transition"
+                        className="text-sm text-slate-500 transition hover:text-slate-900"
                     >
                         Cancel
                     </button>
 
                     <button
                         onClick={handleSave}
-                        className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500 transition"
+                        className="rounded-xl bg-teal-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-600"
                     >
                         Save Configuration
                     </button>
