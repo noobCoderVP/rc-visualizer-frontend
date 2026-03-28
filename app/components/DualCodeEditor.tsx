@@ -4,6 +4,7 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { Code2, Eye, FileClock, FileText, PencilLine } from "lucide-react";
 
 import styles from "./DualCodeEditor.module.css";
 
@@ -40,7 +41,12 @@ export default function DualCodeEditor({
             {/* ================= Problem Pane ================= */}
             <div className={styles.column}>
                 <div className={styles.header}>
-                    <h3 className={styles.title}>Problem Statement</h3>
+                    <h3 className={styles.title}>
+                        <span className="inline-flex items-center gap-2">
+                            <FileText className="h-4 w-4" />
+                            Problem Statement
+                        </span>
+                    </h3>
 
                     <div className={styles.headerActions}>
                         {onOpenHistory && (
@@ -49,17 +55,23 @@ export default function DualCodeEditor({
                                 className={styles.historyBtn}
                                 type="button"
                             >
+                                <FileClock className="h-3.5 w-3.5" />
                                 History
                             </button>
                         )}
 
-                        <button
-                            onClick={() => setPreview((p) => !p)}
-                            className={styles.toggleBtn}
-                            type="button"
-                        >
-                            {preview ? "Edit" : "Preview"}
-                        </button>
+                            <button
+                                onClick={() => setPreview((p) => !p)}
+                                className={styles.toggleBtn}
+                                type="button"
+                            >
+                                {preview ? (
+                                    <PencilLine className="h-3.5 w-3.5" />
+                                ) : (
+                                    <Eye className="h-3.5 w-3.5" />
+                                )}
+                                {preview ? "Edit" : "Preview"}
+                            </button>
                     </div>
                 </div>
 
@@ -88,7 +100,10 @@ export default function DualCodeEditor({
             {/* ================= Code Pane ================= */}
             <div className={styles.column}>
                 <h3 className={styles.title}>
-                    Your Solution Code{" "}
+                    <span className="inline-flex items-center gap-2">
+                        <Code2 className="h-4 w-4" />
+                        Your Solution Code
+                    </span>{" "}
                     {solutionOptional && (
                         <span className={styles.optionalTag}>(optional)</span>
                     )}

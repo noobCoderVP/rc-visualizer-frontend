@@ -2,6 +2,7 @@
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { Eye, FileClock, PencilLine } from "lucide-react";
 
 const MAX_INPUT_HEIGHT = "70vh";
 
@@ -30,15 +31,21 @@ export default function ProblemEditor({
                 <div className="flex gap-2">
                     <button
                         onClick={onOpenHistory}
-                        className="text-xs px-3 py-1 rounded-md bg-gray-700 text-gray-200"
+                        className="inline-flex items-center gap-1.5 rounded-md bg-gray-700 px-3 py-1 text-xs text-gray-200"
                     >
+                        <FileClock className="h-3.5 w-3.5" />
                         History
                     </button>
 
                     <button
                         onClick={onTogglePreview}
-                        className="text-xs px-3 py-1 rounded-md bg-gray-800 text-gray-200"
+                        className="inline-flex items-center gap-1.5 rounded-md bg-gray-800 px-3 py-1 text-xs text-gray-200"
                     >
+                        {preview ? (
+                            <PencilLine className="h-3.5 w-3.5" />
+                        ) : (
+                            <Eye className="h-3.5 w-3.5" />
+                        )}
                         {preview ? "Edit" : "Preview"}
                     </button>
                 </div>

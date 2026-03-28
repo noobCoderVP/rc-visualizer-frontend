@@ -2,6 +2,16 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import {
+    ArrowRight,
+    Binary,
+    BookOpenCheck,
+    Brain,
+    BrainCircuit,
+    Calculator,
+    CheckCircle2,
+    Sparkles,
+} from "lucide-react";
 
 const QUICK_STARTS = [
     {
@@ -10,6 +20,7 @@ const QUICK_STARTS = [
         description:
             "Break a passage into title, idea flow, vocabulary, transitions, and purpose.",
         accent: "from-sky-500 to-cyan-500",
+        icon: Brain,
     },
     {
         title: "RC Solve",
@@ -17,6 +28,7 @@ const QUICK_STARTS = [
         description:
             "Paste a passage with questions and get structured option-wise reasoning.",
         accent: "from-emerald-500 to-teal-500",
+        icon: BookOpenCheck,
     },
     {
         title: "CP Reason",
@@ -24,6 +36,7 @@ const QUICK_STARTS = [
         description:
             "Generate mathematical models, invariants, proofs, and complexity explanations.",
         accent: "from-violet-500 to-indigo-500",
+        icon: Binary,
     },
     {
         title: "Math Practice",
@@ -31,6 +44,7 @@ const QUICK_STARTS = [
         description:
             "Warm up with arithmetic drills before longer test sessions.",
         accent: "from-amber-500 to-orange-500",
+        icon: Calculator,
     },
 ];
 
@@ -68,14 +82,16 @@ export default function HomePage() {
                         <div className="flex flex-wrap gap-3">
                             <Link
                                 href="/varc/analyze"
-                                className="rounded-full bg-slate-950 px-6 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
+                                className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-6 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
                             >
+                                <Brain className="h-4 w-4" />
                                 Analyze RC
                             </Link>
                             <Link
                                 href="/cp/reason"
-                                className="rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-medium text-slate-800 transition hover:border-slate-400 hover:bg-slate-50"
+                                className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-medium text-slate-800 transition hover:border-slate-400 hover:bg-slate-50"
                             >
+                                <Binary className="h-4 w-4" />
                                 Open CP Reason
                             </Link>
                         </div>
@@ -89,8 +105,9 @@ export default function HomePage() {
                             {WORKFLOWS.map((step) => (
                                 <div
                                     key={step}
-                                    className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200"
+                                    className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200"
                                 >
+                                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-teal-300" />
                                     {step}
                                 </div>
                             ))}
@@ -115,26 +132,34 @@ export default function HomePage() {
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                    {QUICK_STARTS.map((item) => (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            className="group glass-panel rounded-[1.75rem] p-5 transition hover:-translate-y-1 hover:shadow-2xl"
-                        >
-                            <div
-                                className={`mb-4 h-2 rounded-full bg-gradient-to-r ${item.accent}`}
-                            />
-                            <h3 className="mb-2 text-xl font-semibold text-slate-900">
-                                {item.title}
-                            </h3>
-                            <p className="mb-4 text-sm leading-7 text-slate-600">
-                                {item.description}
-                            </p>
-                            <span className="text-sm font-medium text-teal-700 transition group-hover:text-teal-800">
-                                Open workspace -
-                            </span>
-                        </Link>
-                    ))}
+                    {QUICK_STARTS.map((item) => {
+                        const Icon = item.icon;
+
+                        return (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                className="group glass-panel rounded-[1.75rem] p-5 transition hover:-translate-y-1 hover:shadow-2xl"
+                            >
+                                <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-white/90 shadow-sm">
+                                    <Icon className="h-5 w-5 text-slate-900" />
+                                </div>
+                                <div
+                                    className={`mb-4 h-2 rounded-full bg-gradient-to-r ${item.accent}`}
+                                />
+                                <h3 className="mb-2 text-xl font-semibold text-slate-900">
+                                    {item.title}
+                                </h3>
+                                <p className="mb-4 text-sm leading-7 text-slate-600">
+                                    {item.description}
+                                </p>
+                                <span className="inline-flex items-center gap-2 text-sm font-medium text-teal-700 transition group-hover:text-teal-800">
+                                    Open workspace
+                                    <ArrowRight className="h-4 w-4" />
+                                </span>
+                            </Link>
+                        );
+                    })}
                 </div>
             </motion.section>
 
@@ -152,7 +177,10 @@ export default function HomePage() {
                     <div className="grid gap-4 sm:grid-cols-3">
                         <div className="rounded-2xl bg-sky-50 p-4">
                             <p className="mb-2 text-sm font-semibold text-sky-800">
-                                Math Rendering
+                                <span className="inline-flex items-center gap-2">
+                                    <Sparkles className="h-4 w-4" />
+                                    Math Rendering
+                                </span>
                             </p>
                             <p className="mb-0 text-sm leading-6 text-slate-700">
                                 Inline math, display equations, and markdown
@@ -161,7 +189,10 @@ export default function HomePage() {
                         </div>
                         <div className="rounded-2xl bg-emerald-50 p-4">
                             <p className="mb-2 text-sm font-semibold text-emerald-800">
-                                Longer Responses
+                                <span className="inline-flex items-center gap-2">
+                                    <CheckCircle2 className="h-4 w-4" />
+                                    Longer Responses
+                                </span>
                             </p>
                             <p className="mb-0 text-sm leading-6 text-slate-700">
                                 Higher output token ceilings reduce mid-answer
@@ -170,7 +201,10 @@ export default function HomePage() {
                         </div>
                         <div className="rounded-2xl bg-violet-50 p-4">
                             <p className="mb-2 text-sm font-semibold text-violet-800">
-                                Better Navigation
+                                <span className="inline-flex items-center gap-2">
+                                    <BrainCircuit className="h-4 w-4" />
+                                    Better Navigation
+                                </span>
                             </p>
                             <p className="mb-0 text-sm leading-6 text-slate-700">
                                 Home and header now point to real workflows.
@@ -191,8 +225,9 @@ export default function HomePage() {
                     </p>
                     <Link
                         href="/varc/analyze"
-                        className="inline-flex rounded-full bg-teal-700 px-5 py-3 text-sm font-medium text-white transition hover:bg-teal-600"
+                        className="inline-flex items-center gap-2 rounded-full bg-teal-700 px-5 py-3 text-sm font-medium text-white transition hover:bg-teal-600"
                     >
+                        <Brain className="h-4 w-4" />
                         Start with RC Analyze
                     </Link>
                 </div>

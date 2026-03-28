@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Calculator, Hash, Sigma } from "lucide-react";
 import AdditionPractice from "../../components/AdditionPractice";
 import MultiplicationPractice from "../../components/MultiplicationPractice";
 
@@ -37,7 +38,10 @@ export default function MathPracticePage() {
                 <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
                     <div>
                         <p className="mb-2 text-sm font-semibold uppercase tracking-[0.28em] text-amber-700">
-                            Quants Practice
+                            <span className="inline-flex items-center gap-2">
+                                <Calculator className="h-4 w-4" />
+                                Quants Practice
+                            </span>
                         </p>
                         <h1 className="mb-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
                             Math Practice
@@ -64,9 +68,16 @@ export default function MathPracticePage() {
                                             : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
                                     }`}
                                 >
-                                    {tab === "addition"
-                                        ? "Addition"
-                                        : "Multiplication"}
+                                    <span className="inline-flex items-center gap-2">
+                                        {tab === "addition" ? (
+                                            <Sigma className="h-4 w-4" />
+                                        ) : (
+                                            <Hash className="h-4 w-4" />
+                                        )}
+                                        {tab === "addition"
+                                            ? "Addition"
+                                            : "Multiplication"}
+                                    </span>
                                 </button>
                             ))}
                         </div>

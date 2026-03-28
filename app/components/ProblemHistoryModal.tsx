@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { FiTrash2 } from "react-icons/fi";
+import { Clock3, History, Trash2, X } from "lucide-react";
 import { ProblemHistoryItem } from "@/app/lib/problemHistoryStorage";
 
 function preview(text: string, words = 30) {
@@ -42,7 +42,10 @@ export default function ProblemHistoryModal({
                 <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-6 py-4">
                     <div>
                         <div className="text-lg font-semibold text-slate-900">
-                            History
+                            <span className="inline-flex items-center gap-2">
+                                <History className="h-5 w-5" />
+                                History
+                            </span>
                         </div>
                         <div className="text-sm text-slate-500">
                             Reopen previous runs and compare outputs.
@@ -50,8 +53,9 @@ export default function ProblemHistoryModal({
                     </div>
                     <button
                         onClick={onClose}
-                        className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-500 transition hover:border-slate-300 hover:text-slate-900"
+                        className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-500 transition hover:border-slate-300 hover:text-slate-900"
                     >
+                        <X className="h-4 w-4" />
                         Close
                     </button>
                 </div>
@@ -99,9 +103,12 @@ export default function ProblemHistoryModal({
                                                 </div>
 
                                                 <div className="text-slate-500">
-                                                    {new Date(
-                                                        item.createdAt,
-                                                    ).toLocaleString()}
+                                                    <span className="inline-flex items-center gap-1.5">
+                                                        <Clock3 className="h-3.5 w-3.5" />
+                                                        {new Date(
+                                                            item.createdAt,
+                                                        ).toLocaleString()}
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
@@ -112,7 +119,7 @@ export default function ProblemHistoryModal({
                                                 title="Delete"
                                                 className="rounded-xl border border-red-200 bg-red-50 p-2 text-red-600 transition hover:border-red-300 hover:bg-red-100 hover:text-red-700"
                                             >
-                                                <FiTrash2 size={20} />
+                                                <Trash2 className="h-5 w-5" />
                                             </button>
                                         </div>
                                     </motion.li>
