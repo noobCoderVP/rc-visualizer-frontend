@@ -45,9 +45,11 @@ export default function ProblemEditor({
             </div>
 
             <div
-                className="rounded-xl shadow-sm overflow-hidden"
+                className="overflow-hidden rounded-2xl border shadow-lg"
                 style={{
-                    backgroundColor: "#0b1220",
+                    backgroundColor: "var(--editor-shell)",
+                    borderColor: "var(--editor-shell-border)",
+                    boxShadow: "var(--editor-shell-shadow)",
                     maxHeight: MAX_INPUT_HEIGHT,
                 }}
             >
@@ -59,24 +61,29 @@ export default function ProblemEditor({
                         className="w-full resize-none p-4 focus:outline-none"
                         style={{
                             backgroundColor: "transparent",
-                            color: "#e5e7eb",
+                            color: "var(--editor-text)",
                             fontFamily: "Georgia, serif",
                             fontSize: 15,
                             lineHeight: 1.7,
                             minHeight: 240,
                             maxHeight: MAX_INPUT_HEIGHT,
                             overflowY: "auto",
+                            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
                         }}
                     />
                 ) : (
                     <div
-                        className="overflow-y-auto bg-white p-4"
+                        className="overflow-y-auto p-4"
                         style={{
+                            backgroundColor: "var(--editor-preview-bg)",
                             lineHeight: 1.75,
                             maxHeight: MAX_INPUT_HEIGHT,
                         }}
                     >
-                        <div className="mb-3 text-xs italic text-slate-500">
+                        <div
+                            className="mb-3 text-xs italic"
+                            style={{ color: "var(--editor-preview-muted)" }}
+                        >
                             Preview mode (read-only)
                         </div>
 
@@ -99,42 +106,92 @@ export default function ProblemEditor({
                                     </h3>
                                 ),
                                 p: ({ children }) => (
-                                    <p className="mb-4 text-[15px] leading-7 text-slate-800">
+                                    <p
+                                        className="mb-4 text-[15px] leading-7"
+                                        style={{
+                                            color: "var(--editor-preview-text)",
+                                        }}
+                                    >
                                         {children}
                                     </p>
                                 ),
                                 ul: ({ children }) => (
-                                    <ul className="mb-4 list-disc pl-6 text-slate-800">
+                                    <ul
+                                        className="mb-4 list-disc pl-6"
+                                        style={{
+                                            color: "var(--editor-preview-text)",
+                                        }}
+                                    >
                                         {children}
                                     </ul>
                                 ),
                                 ol: ({ children }) => (
-                                    <ol className="mb-4 list-decimal pl-6 text-slate-800">
+                                    <ol
+                                        className="mb-4 list-decimal pl-6"
+                                        style={{
+                                            color: "var(--editor-preview-text)",
+                                        }}
+                                    >
                                         {children}
                                     </ol>
                                 ),
                                 li: ({ children }) => (
-                                    <li className="mb-2 text-[15px] leading-7 text-slate-800">
+                                    <li
+                                        className="mb-2 text-[15px] leading-7"
+                                        style={{
+                                            color: "var(--editor-preview-text)",
+                                        }}
+                                    >
                                         {children}
                                     </li>
                                 ),
                                 strong: ({ children }) => (
-                                    <strong className="font-semibold text-slate-950">
+                                    <strong
+                                        className="font-semibold"
+                                        style={{
+                                            color: "var(--editor-preview-text)",
+                                        }}
+                                    >
                                         {children}
                                     </strong>
                                 ),
                                 code: ({ children }) => (
-                                    <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-sm text-slate-900">
+                                    <code
+                                        className="rounded px-1.5 py-0.5 font-mono text-sm"
+                                        style={{
+                                            backgroundColor:
+                                                "var(--editor-code-inline-bg)",
+                                            color:
+                                                "var(--editor-code-inline-text)",
+                                        }}
+                                    >
                                         {children}
                                     </code>
                                 ),
                                 pre: ({ children }) => (
-                                    <pre className="mb-4 overflow-x-auto rounded-xl bg-slate-950 p-4 text-sm text-slate-100">
+                                    <pre
+                                        className="mb-4 overflow-x-auto rounded-xl p-4 text-sm"
+                                        style={{
+                                            backgroundColor:
+                                                "var(--editor-code-block-bg)",
+                                            color:
+                                                "var(--editor-code-block-text)",
+                                        }}
+                                    >
                                         {children}
                                     </pre>
                                 ),
                                 blockquote: ({ children }) => (
-                                    <blockquote className="mb-4 rounded-r-lg border-l-4 border-sky-300 bg-sky-50 px-4 py-3 text-slate-700">
+                                    <blockquote
+                                        className="mb-4 rounded-r-lg border-l-4 px-4 py-3"
+                                        style={{
+                                            borderLeftColor:
+                                                "var(--editor-quote-border)",
+                                            backgroundColor:
+                                                "var(--editor-quote-bg)",
+                                            color: "var(--editor-quote-text)",
+                                        }}
+                                    >
                                         {children}
                                     </blockquote>
                                 ),

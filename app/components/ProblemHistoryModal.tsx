@@ -5,14 +5,18 @@ import { FiTrash2 } from "react-icons/fi";
 import { ProblemHistoryItem } from "@/app/lib/problemHistoryStorage";
 
 function preview(text: string, words = 30) {
-    const w = text.split(/\s+/);
-    return w.length <= words ? text : w.slice(0, words).join(" ") + " …";
+    const splitWords = text.split(/\s+/);
+    return splitWords.length <= words
+        ? text
+        : `${splitWords.slice(0, words).join(" ")} ...`;
 }
 
 function badgeColor(type: "tool" | "model") {
-    if (type === "tool")
-        return "bg-indigo-50 text-indigo-700 border-indigo-200";
-    return "bg-emerald-50 text-emerald-700 border-emerald-200";
+    if (type === "tool") {
+        return "border-sky-300 bg-sky-100 text-sky-900";
+    }
+
+    return "border-emerald-300 bg-emerald-100 text-emerald-900";
 }
 
 export default function ProblemHistoryModal({
@@ -27,29 +31,34 @@ export default function ProblemHistoryModal({
     onClose: () => void;
 }) {
     return (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm">
             <motion.div
                 initial={{ opacity: 0, scale: 0.96, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.96, y: 10 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
-                className="bg-white w-full max-w-4xl rounded-xl shadow-xl flex flex-col"
+                className="flex max-h-[82vh] w-full max-w-4xl flex-col overflow-hidden rounded-3xl border border-slate-300/80 bg-white shadow-2xl"
             >
-                {/* Header */}
-                <div className="flex justify-between items-center px-6 py-4 border-b">
-                    <div className="text-lg font-semibold">History</div>
+                <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-6 py-4">
+                    <div>
+                        <div className="text-lg font-semibold text-slate-900">
+                            History
+                        </div>
+                        <div className="text-sm text-slate-500">
+                            Reopen previous runs and compare outputs.
+                        </div>
+                    </div>
                     <button
                         onClick={onClose}
-                        className="text-gray-500 hover:text-black text-lg"
+                        className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-500 transition hover:border-slate-300 hover:text-slate-900"
                     >
-                        ✕
+                        Close
                     </button>
                 </div>
 
-                {/* Body */}
-                <div className="px-6 py-4 overflow-y-auto max-h-[70vh]">
+                <div className="max-h-[70vh] overflow-y-auto px-6 py-5">
                     {items.length === 0 ? (
-                        <div className="text-sm text-gray-500">
+                        <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-center text-sm text-slate-500">
                             No history yet.
                         </div>
                     ) : (
@@ -62,52 +71,48 @@ export default function ProblemHistoryModal({
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, y: -6 }}
                                         transition={{ duration: 0.15 }}
-                                        className="border rounded-lg px-4 py-3 hover:bg-gray-50 flex justify-between gap-4"
+                                        className="flex gap-4 rounded-2xl border border-slate-300 bg-white px-4 py-4 shadow-md transition hover:border-slate-400 hover:bg-slate-50 hover:shadow-lg"
                                     >
-                                        {/* Left content */}
                                         <div
                                             className="flex-1 cursor-pointer"
                                             onClick={() => onSelect(item)}
                                         >
-                                            <div className="text-sm text-gray-900">
+                                            <div className="text-sm leading-7 text-slate-800">
                                                 {preview(item.problem)}
                                             </div>
 
-                                            <div className="flex flex-wrap gap-2 mt-2 items-center text-xs">
+                                            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
                                                 <div
-                                                    className={`px-2 py-0.5 rounded border ${badgeColor(
-                                                        "tool"
+                                                    className={`rounded-full border px-2.5 py-1 font-medium ${badgeColor(
+                                                        "tool",
                                                     )}`}
                                                 >
                                                     {item.tool.toUpperCase()}
                                                 </div>
 
                                                 <div
-                                                    className={`px-2 py-0.5 rounded border ${badgeColor(
-                                                        "model"
+                                                    className={`rounded-full border px-2.5 py-1 font-medium ${badgeColor(
+                                                        "model",
                                                     )}`}
                                                 >
                                                     {item.model}
                                                 </div>
 
-                                                <div className="text-gray-400">
+                                                <div className="text-slate-500">
                                                     {new Date(
-                                                        item.createdAt
+                                                        item.createdAt,
                                                     ).toLocaleString()}
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {/* Delete */}
                                         <div className="flex items-start">
                                             <button
-                                                onClick={() =>
-                                                    onDelete(item.id)
-                                                }
+                                                onClick={() => onDelete(item.id)}
                                                 title="Delete"
-                                                className="text-red-500 hover:text-red-700 p-2"
+                                                className="rounded-xl border border-red-200 bg-red-50 p-2 text-red-600 transition hover:border-red-300 hover:bg-red-100 hover:text-red-700"
                                             >
-                                                <FiTrash2 size={22} />
+                                                <FiTrash2 size={20} />
                                             </button>
                                         </div>
                                     </motion.li>
