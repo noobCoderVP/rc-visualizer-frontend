@@ -4,8 +4,7 @@ import Groq from "groq-sdk";
 import type { ChatCompletionMessageParam } from "groq-sdk/resources/chat/completions";
 
 import { LLMRequest, LLMResponse } from "../types";
-
-const MAX_COMPLETION_TOKENS = 12000;
+import { resolveGroqCompletionBudget } from "../modelLimits";
 
 export async function callGroq(
     apiKey: string,
@@ -32,10 +31,24 @@ export async function callGroq(
         content: request.userPrompt,
     });
 
+    const promptText = messages
+        .map((message) =>
+            typeof message.content === "string" ? message.content : ""
+        )
+        .join("\n\n");
+
+    const max_completion_tokens = resolveGroqCompletionBudget(
+        model,
+        promptText,
+        request.maxOutputTokens
+    );
+
     const res = await client.chat.completions.create({
         model,
         messages,
-        max_completion_tokens: MAX_COMPLETION_TOKENS,
+        ...(max_completion_tokens !== undefined
+            ? { max_completion_tokens }
+            : {}),
     });
 
     return {

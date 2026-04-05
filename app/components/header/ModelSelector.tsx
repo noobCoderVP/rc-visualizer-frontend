@@ -5,13 +5,11 @@
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { Bot } from "lucide-react";
 import ModelSelectorModal from "./ModelSelectorModal";
-
-function subscribe() {
-    return () => {};
-}
+import { loadLLMConfig, subscribeToLLMConfig } from "@/app/lib/storage";
 
 function getSnapshot() {
-    return localStorage.getItem("llm_config");
+    const config = loadLLMConfig();
+    return config ? JSON.stringify(config) : null;
 }
 
 function getServerSnapshot() {
@@ -21,7 +19,7 @@ function getServerSnapshot() {
 export default function ModelSelector() {
     const [open, setOpen] = useState(false);
     const configSnapshot = useSyncExternalStore(
-        subscribe,
+        subscribeToLLMConfig,
         getSnapshot,
         getServerSnapshot,
     );

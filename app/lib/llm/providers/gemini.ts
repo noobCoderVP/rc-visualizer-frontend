@@ -2,8 +2,7 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { LLMRequest, LLMResponse } from "../types";
-
-const MAX_OUTPUT_TOKENS = 8192;
+import { resolveMaxOutputTokens } from "../modelLimits";
 
 export async function callGemini(
     apiKey: string,
@@ -15,11 +14,16 @@ export async function callGemini(
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
+    const maxOutputTokens = resolveMaxOutputTokens(
+        "gemini",
+        model,
+        request.maxOutputTokens
+    );
 
     const generativeModel = genAI.getGenerativeModel({
         model,
         generationConfig: {
-            maxOutputTokens: MAX_OUTPUT_TOKENS,
+            ...(maxOutputTokens !== undefined ? { maxOutputTokens } : {}),
         },
     });
 

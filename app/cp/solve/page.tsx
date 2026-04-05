@@ -58,6 +58,7 @@ export default function CPSolvePage() {
             const raw = await generateText({
                 systemPrompt: CP_PSEUDOCODE_EXPLORER_PROMPT,
                 userPrompt: `Problem:\n${text}`,
+                maxOutputTokens: 6000,
             });
 
             const clean = raw.replace(/```json|```/g, "").trim();
@@ -78,7 +79,12 @@ export default function CPSolvePage() {
             saveRun(text, data, modelLabel);
         } catch (err) {
             console.error("Error generating approaches:", err);
-            alert("Failed to generate solution approaches.");
+            const message =
+                err instanceof Error
+                    ? err.message
+                    : "Failed to generate solution approaches.";
+
+            alert(message);
         } finally {
             setLoading(false);
         }

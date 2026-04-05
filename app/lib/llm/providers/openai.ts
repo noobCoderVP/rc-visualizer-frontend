@@ -3,8 +3,7 @@
 import OpenAI from "openai";
 import type { ChatCompletionMessageParam } from "openai/resources/chat";
 import { LLMRequest, LLMResponse } from "../types";
-
-const MAX_COMPLETION_TOKENS = 12000;
+import { resolveMaxOutputTokens } from "../modelLimits";
 
 export async function callOpenAI(
     apiKey: string,
@@ -27,10 +26,18 @@ export async function callOpenAI(
         content: request.userPrompt,
     });
 
+    const max_completion_tokens = resolveMaxOutputTokens(
+        "openai",
+        model,
+        request.maxOutputTokens
+    );
+
     const completion = await client.chat.completions.create({
         model,
         messages,
-        max_completion_tokens: MAX_COMPLETION_TOKENS,
+        ...(max_completion_tokens !== undefined
+            ? { max_completion_tokens }
+            : {}),
     });
 
     return {

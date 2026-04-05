@@ -18,7 +18,9 @@ export function getActiveLLMConfig(): LLMConfig {
     const stored = loadLLMConfig();
 
     if (!stored) {
-        throw new Error("No LLM configuration found");
+        throw new Error(
+            "No LLM configuration found. Open the model selector in the header, choose a provider and model, add an API key if needed, then save."
+        );
     }
 
     if (!isLLMProvider(stored.provider)) {

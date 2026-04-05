@@ -11,6 +11,7 @@ export type LLMConfig = {
 export type LLMRequest = {
     systemPrompt?: string;
     userPrompt: string;
+    maxOutputTokens?: number;
 };
 
 export type LLMResponse = {
